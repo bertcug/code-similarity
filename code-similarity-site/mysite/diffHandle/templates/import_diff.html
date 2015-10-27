@@ -1,0 +1,27 @@
+{% extends "../../mysite/templates/base.html" %}
+
+{% block title %}
+<title>补丁文件导入</title>
+{% endblock %}
+
+{% load bootstrap3 %}
+
+{% block content_body %}
+<div class="col-lg-6 col-lg-offset-3" style="margin-top:5%;">
+<div class="panel panel-info">
+		<div class="panel-heading">
+			<div class="panel-title text-center"> <font face="楷体" size="5">提交补丁文件</font></div>
+		</div>
+		<div class="panel-body">
+			<form method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+				{% bootstrap_form diff %}
+				<input class="btn btn-success btn-block" type="submit" value="提交">
+			</form>
+			{% if exist %}
+			<br>
+			<p class="text-center text-danger">该补丁文件已经上传</p>
+			{% endif %}
+		</div>
+</div>
+{% endblock %}

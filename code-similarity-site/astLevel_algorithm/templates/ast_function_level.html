@@ -1,0 +1,46 @@
+{% extends "../../mysite/templates/base.html" %}
+{% load bootstrap3 %}
+{% block title %} <title>AST函数级代码检测</title> {% endblock %}
+
+{% block content_body %}
+	<h2 align="center">AST函数级比较</h2>
+	<h3 align="center">漏洞函数/补丁后函数比较</h3>
+	<div align="center" width=80%>
+		<form method="post" align="center">
+			{% csrf_token %} {{ funcs.as_table }} <input type="submit" value="计算">
+		</form>
+	</div>
+	<br><div style="border-bottom:1px dashed;width=80%"></div><br>
+	
+	<table align="center" border="1" width=80%>
+		<caption>
+			<h2>计算报告</h2>
+		</caption>
+		<tr>
+			<th>编号</th>
+			<th>CVE编号</th>
+			<th>漏洞函数</th>
+			<th>漏洞存在文件</th>
+			<th>计算状态</th>
+			<th>比较报告</th>
+			<th>耗时</th>
+		</tr>
+		{% if reports %}
+		{% for report in reports %}
+		<tr>
+			<td align="center">{{ report.id }}</td>
+			<td align="center">{{ report.cveid }}</td>
+			<td align="center">{{ report.vuln_func }}</td>
+			<td align="center">{{ report.vuln_file }}</td>
+			<td align="center">{{ report.status }}</td>
+			<td align="center">{{ report.match_reports }}</td>
+			<td align="center">{{ report.cost }}</td>
+		</tr>
+		{% endfor %}
+		{% else %}
+		<tr>
+		<td align="center" colspan="6">无任何测试记录</td>
+		</tr>
+		{% endif %}
+	</table>
+{% endblock %}

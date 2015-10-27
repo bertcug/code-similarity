@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>查看所有测试结果</title>
+</head>
+<body>
+	<table border="1" cellspacing="0" width=95%>
+		<caption align="center">
+			<h2>redebug算法测试结果汇总</h2>
+		</caption>
+		<tr>
+			<th>软件与版本</th>
+			<th>补丁的cve编号</th>
+			<th>补丁片段个数</th>
+			<th>源码匹配个数</th>
+			<th>总耗时</th>
+			<th>详细报告</th>
+			<th>状态</th>
+		</tr>
+		{% if infos %} {% for info in infos %}
+		<tr>
+			<td align="center">{{ info.soft_id }}</td>
+			<td align="center">{{ info.diff_id.cveid }}</td>
+			<td align="center">{{ info.paterns }}</td>
+			<td align="center">{{ info.matches }}</td>
+			<td align="center">{{ info.cost }}</td>
+			<td align="center">{% if info.html_report %} <a
+				href="view_detail/{{ info.reports_id }}/">详细报告</a> {% else %}
+				<p>无</p> {% endif %}
+			</td>
+			<td>{% if info.status == "pending" %}
+				<p>计算中</p>
+			{% else %}
+			<p>已完成</p>
+			{% endif %}
+			</td>
+		</tr>
+		{% endfor %} {% else %}
+		<tr>
+			<td align="center" colspan="7"><p>无任何测试记录</p></td>
+		</tr>
+		{% endif %}
+
+	</table>
+
+</body>
+</html>

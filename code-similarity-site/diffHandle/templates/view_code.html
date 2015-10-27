@@ -1,0 +1,12 @@
+{% extends "../../mysite/templates/base.html" %}
+
+{% block title %}
+<title>源码展示</title>
+{% endblock %}
+
+{% block content_body %}
+<pre>
+{% for line in lines %}{{ line }}{% endfor %}
+</pre>
+
+{% endblock %}

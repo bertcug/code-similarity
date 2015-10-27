@@ -1,0 +1,63 @@
+{% extends "../../mysite/templates/base.html" %}
+{% block title %}
+<title>图形数据库管理</title>
+{% endblock %}
+
+{% load bootstrap3 %}
+{% bootstrap_css %}
+{% bootstrap_javascript %}
+
+{% block addon %}
+<script>
+function modi_value(id){
+	document.getElementById('sid').value = id;
+}
+</script>
+{% endblock %}
+
+{% block content_body %}
+	<h2 align="center">图形数据库管理</h2>
+	
+	<form method="post">
+		{% csrf_token %} <input type="hidden" id="sid" name="soft_id" value="">
+		<table class="table table-striped table-bordered">
+			<tr>
+				<th class="text-center">编号</th>
+				<th class="text-center">软件名称</th>
+				<th class="text-center">软件版本</th>
+				<th class="text-center">图形数据库</th>
+				<th class="text-center">操作</th>
+			</tr>
+			{% if softs %} {% for soft in softs %}
+			<tr>
+				<td align="center">{{ soft.software_id }}</td>
+				<td align="center">{{ soft.software_name }}</td>
+				<td align="center">{{ soft.software_version }}</td> 
+				{% if not soft.neo4j_db %}
+				<td align="center">无</td>
+				<td align="center">
+					<input class="btn btn-xs btn-success {% if not user.is_staff %}disabled{% endif %}"
+					 type="submit" name="create_db"
+					 value="生成"
+					 onclick="modi_value({{ soft.software_id }}">
+				</td>
+				{% elif soft.neo4j_db == "pending" %}
+				<td align="center">生成中</td>
+				<td align="center">无</td>
+				{% else %}
+				<td align="center">已生成</td>
+				<td align="center">无</td> 
+				{% endif %}
+			</tr>
+			{% endfor %}
+			{% else %}
+			<tr>
+				<td align="center" colspan="5">无任何记录</td>
+			</tr>
+			{% endif %}
+		</table>
+	</form>
+	<div align="center">
+	{% bootstrap_pagination softs url="?page=1" %}
+	</div>
+{% endblock %}

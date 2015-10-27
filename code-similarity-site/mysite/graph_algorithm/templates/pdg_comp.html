@@ -1,0 +1,61 @@
+{% extends "../../mysite/templates/base.html" %} 
+{% block title %}
+<title>漏洞函数/补丁函数PDG比较</title>
+{% endblock %}
+{% load bootstrap3 %}
+{% block content_body %}
+<h2 align="center">漏洞函数与补丁函数的PDG比较</h2>
+<form method="post">
+	{% csrf_token %}
+		{% bootstrap_form funcs layout="horizontal" %}
+		<input class="btn btn-primary" type="submit" value="计算">
+</form>
+<br>
+<div style="border-bottom: 1px dashed;width=80%"></div>
+<br>
+<table class="table table-bordered" style="" align="center">
+	<caption>
+		<h3 align="center">PDG比较记录</h3>
+	</caption>
+	<tr>
+		<th class="text-center">编号</th>
+		<th class="text-center">CVE编号</th>
+		<th class="text-center">漏洞函数名</th>
+		<th class="text-center">状态</th>
+		<th class="text-center">是否匹配</th>
+		<th class="text-center">相似度</th>
+		<th class="text-center">耗时</th>
+	</tr>
+	{% for info in infos %}
+	<tr>
+		<td align="center">{{ info.id }}</td>
+		<td align="center">{{ info.vuln_info.cve_info.cveid }}</td>
+		<td align="center">{{ info.vuln_info.vuln_func }}</td>
+		{% if info.status == "success" %}
+			<td align="center">计算成功</td>
+			{% if info.is_match %}
+				<td align="center">是</td>
+			{% else %}
+				<td align="center">否</td>
+			{% endif %}
+			<td align="center">{{ info.similarity_rate }}</td>
+			<td align="center">{{ info.cost }}</td>
+		{% elif info.status == "pending" %}
+			<td align="center">计算中</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+		{% elif info.status == "vuln_func_not_found" %}
+			<td align="center">漏洞函数未入库</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+		{% elif info.status == "patch_func_not_found" %}
+			<td align="center">补丁函数未入库</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+			<td align="center">-</td>
+		{% endif %}
+	{% endfor %}	
+</table>
+{% endblock %}
