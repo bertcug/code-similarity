@@ -3,8 +3,7 @@ import os
 import re
 import string
 
-from VunlsGener import getFuncStartFromSrc, getFuncEndFromSrc
-from VunlsGener import getSourceCodeFile
+from VunlsGener import getFuncFromSrc
 from VunlsGener import replace_funcName
 
 
@@ -173,9 +172,7 @@ def parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, o
     
     src_contents = open(vunl_file, "r").readlines()
     
-    func_start = getFuncStartFromSrc(src_contents, vunl_func)
-    func_end = getFuncEndFromSrc(src_contents, func_start)
-    
+    func_start, func_end = getFuncFromSrc(src_contents, vunl_func)
     
     diff_starts = getDiffContentStart(diff_contents, vunl_file)
     

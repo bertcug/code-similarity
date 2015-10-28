@@ -1,7 +1,7 @@
 # coding=utf-8
 import os
 import time
-from util.VunlsGener import getFuncStartFromSrc
+from util.VunlsGener import getFuncFromSrc
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse
@@ -37,26 +37,32 @@ def import_diff(request):
     else:
         diff = diff_import(request.POST, request.FILES)       
         if diff.is_valid():
-            if not os.path.isdir(settings.DIFF_FILE_PATH + diff.cleaned_data['cveid'].lower()):
-                os.makedirs(settings.DIFF_FILE_PATH + diff.cleaned_data['cveid'].lower())
-            file_path = settings.DIFF_FILE_PATH + diff.cleaned_data['cveid'].lower() + "/" + time.time().__str__()
+            #create cve folder
+            tmp_path = os.path.join(settings.DIFF_FILE_PATH, diff.cleaned_data['cveid'].lower())
+            if not os.path.isdir(tmp_path):
+                os.makedirs(tmp_path)
             
+            #upload diff file with time-based file name and get diff file's md5
+            file_path = os.path.join(tmp_path, time.time().__str__())
             file_md5 = handle_upload_diff_file(request.FILES['diff_file'], file_path)
+            
+            #get the releative software
             soft_id = int(request.POST['vuln_soft'])
             soft = softwares.objects.get(software_id = soft_id)
             
+            #test whether the infomation has been uploaded
             try:
                 obj = cve_infos.objects.get(cveid = diff.cleaned_data['cveid'].lower(),
                                             vuln_soft = soft,
                                             diff_file__endswith = file_md5)
+                #the infomation exists, remove the uploaded diff file and tell user
                 os.remove(file_path)
                 return render_to_response("import_diff.html",
                                           RequestContext(request, {'diff':diff, 'exist':True}))
                 
             except cve_infos.DoesNotExist:
-                new_name = os.path.join(
-                            os.path.join(settings.DIFF_FILE_PATH, diff.cleaned_data['cveid'].lower()),
-                            file_md5)
+                #the information doesn't exists, rename the diff file with md5 and write this into database 
+                new_name = os.path.join(tmp_path, file_md5)
                 os.rename(file_path, new_name)
                 
                 obj = cve_infos(cveid = diff.cleaned_data['cveid'].lower(),
@@ -72,21 +78,25 @@ def import_diff(request):
                                       RequestContext(request, {'diff':diff}))
         
 def handle_upload_diff_file(diff_file, file_path):
+    #upload the diff file
     f = open(file_path, "wb")
     m = hashlib.md5()
     for chunk in diff_file.chunks():
         f.write(chunk)
+    
+    #calculate the md5
     m.update(open(file_path,"r").read())
     
     return m.hexdigest()
 
 def get_vuln_file(file_name, source_code_dir):
-    files = []
+    found_files = []
     for root, dirs, files in os.walk(source_code_dir):
         for _file in files:
             if _file == file_name:
-                files.append(os.path.abspath(os.path.join(root, _file)))
-    return files
+                found_files.append(os.path.abspath(os.path.join(root, _file)))
+                break #同目录下不会有同名文件
+    return found_files
 
 @login_required           
 def import_vuln_info(request):
@@ -99,50 +109,54 @@ def import_vuln_info(request):
         if vuln_info.is_valid():
             _id = int(request.POST['cve_id'])
             cve_info = cve_infos.objects.get(info_id = _id)
-            #检查输入的文件是否存在
+            
+            #检测漏洞文件位置
+            vuln_file = ""
+            
             if os.path.isfile(os.path.join(cve_info.vuln_soft.sourcecodepath, 
                                            vuln_info.cleaned_data['vuln_func_file'])):
+                #轻松找到
                 vuln_file = os.path.join(cve_info.vuln_soft.sourcecodepath, 
                                            vuln_info.cleaned_data['vuln_func_file'])
-                #检测该文件中是否有对应函数
-                line_contents = open(vuln_file, 'r').readlines()
-                ret = getFuncStartFromSrc(line_contents, vuln_info.cleaned_data['vuln_func'])
-                if ret == -1:
-                    return render_to_response("import_vuln.html",
-                                              RequestContext(request,{'vuln_info':vuln_info,
-                                                                     'no_func_found':True}))
-                try:
-                    obj = vulnerability_info.objects.get(cve_info=cve_info,
-                                                      vuln_func = vuln_info.cleaned_data['vuln_func'])
-                    return render_to_response("import_vuln.html",
-                                              RequestContext(request,{'vuln_info':vuln_info,
-                                                                     'already':True}))
-                except vulnerability_info.DoesNotExist:
-                    info = vulnerability_info(cve_info = cve_info,
-                                        vuln_func = vuln_info.cleaned_data['vuln_func'],
-                                        vuln_file = vuln_file,
-                                        user = request.user)
-                    info.save()
-                    return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
             else:
+                #尝试搜索
                 files = get_vuln_file(os.path.basename(vuln_info.cleaned_data['vuln_func_file']),
-                                       cve_info.vuln_soft.sourcecodepath)
+                                      cve_info.vuln_soft.sourcecodepath)
+                #未搜索到
                 if len(files) == 0:
                     return render_to_response("import_vuln.html",
-                                              RequestContext(request,{'vuln_info':vuln_info,
-                                                                      'no_file_found':True}))
+                                              RequestContext(request,{'vuln_info':vuln_info, 'no_file_found':True}))
+                #成功搜索到
                 elif len(files) == 1:
                     vuln_file = files[0]
-                    info = vulnerability_info(cve_info = cve_info,
-                                        vuln_func = vuln_info.cleaned_data['vuln_func'],
-                                        vuln_file = vuln_file,
-                                        user = request.user)
-                    info.save()
-                    return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
+                    
+                #搜索到多个重名文件,
                 elif len(files) > 1:
                     return render_to_response("import_vuln.html",
                                               RequestContext(request,{'vuln_info':vuln_info,
                                                                       'multi_file_found':True}))
+                
+            try:
+                obj = vulnerability_info.objects.get(cve_info=cve_info,
+                                                    vuln_func = vuln_info.cleaned_data['vuln_func'])
+                return render_to_response("import_vuln.html",
+                                            RequestContext(request,{'vuln_info':vuln_info,
+                                                                    'already':True}))
+            except vulnerability_info.DoesNotExist:
+                #检测该文件中是否有对应函数
+                line_contents = open(vuln_file, 'r').readlines()
+                start, end = getFuncFromSrc(line_contents, vuln_info.cleaned_data['vuln_func'])
+                if start == -1:
+                    return render_to_response("import_vuln.html",
+                                              RequestContext(request,{'vuln_info':vuln_info, 'no_func_found':True}))
+                else:
+                    info = vulnerability_info(cve_info = cve_info,
+                                        vuln_func = vuln_info.cleaned_data['vuln_func'],
+                                        vuln_file = vuln_file,
+                                        user = request.user)
+                    info.save()
+                    return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
+                
         else:
             return render_to_response("import_vuln.html",
                                       RequestContext(request,{'vuln_info':vuln_info}))
