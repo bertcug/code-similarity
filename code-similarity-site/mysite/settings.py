@@ -17,6 +17,7 @@ import os
 import shutil
 
 
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
@@ -82,6 +83,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
+conf_file = os.path.join(BASE_DIR, "site.conf")   
+conf = ConfigParser.ConfigParser()
+conf.read(conf_file)
 
 # Database
 # https://docs.djangoproject.com/en/1.8/ref/settings/#databases
@@ -92,8 +96,8 @@ DATABASES = {
         'NAME': 'code_similarity',
         'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': 'bert',
-        'PASSWORD': 'qazwsxedc',
+        'USER': conf.get("db", "user"),
+        'PASSWORD': conf.get("db", "passwd"),
     }
 }
 
@@ -129,9 +133,6 @@ STATICFILES_FINDERS = (
 
 # user define variables
 # user define variables
-conf_file = os.path.join(BASE_DIR, "site.conf")   
-conf = ConfigParser.ConfigParser()
-conf.read(conf_file)
 
 BASE_PATH = conf.get("path_conf", "file_base_path")
 JOERN_PATH = conf.get("path_conf", "joern_path")
