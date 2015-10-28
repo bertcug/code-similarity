@@ -31,7 +31,21 @@ def untar(file, dir):
         
     t.extractall(path = dir)
     return dir
+
+def get_show_softs(request):
+    softs = softwares.objects.all()
+    pages = Paginator(softs, 20)
+    page = request.GET.get("page")
+    show_softs = None
+    try:
+        show_softs = pages.page(page)
+    except PageNotAnInteger:
+        show_softs = pages.page(1)
+    except EmptyPage:
+        show_softs = pages.page(pages.num_pages)
     
+    return show_softs
+
 def software_import(request):
     if request.method == "GET":
         soft = soft_info_form()
@@ -73,56 +87,22 @@ def software_import(request):
 @login_required
 def software_show(request):
     if request.method == "GET":
-        softs = softwares.objects.all()
-        pages = Paginator(softs, 20)
-        page = request.GET.get("page")
-        show_softs = None
-        try:
-            show_softs = pages.page(page)
-        except PageNotAnInteger:
-            show_softs = pages.page(1)
-        except EmptyPage:
-            show_softs = pages.page(pages.num_pages)
-        
-        return render_to_response("show_softs.html", RequestContext(request,{"softs":show_softs}))
+        return render_to_response("show_softs.html", 
+                                  RequestContext(request,{"softs":get_show_softs(request)}))
     else:
-        if request.POST.has_key('refresh'):
-            softs = softwares.objects.all()
-            pages = Paginator(softs, 20)
-            page = request.GET.get("page")
-            show_softs = None
-            try:
-                show_softs = pages.page(page)
-            except PageNotAnInteger:
-                show_softs = pages.page(1)
-            except EmptyPage:
-                show_softs = pages.page(pages.num_pages)
-                
-            return render_to_response("show_softs.html", RequestContext(request,{'softs':show_softs}))
+        if request.POST.has_key('refresh'):   
+            return render_to_response("show_softs.html", 
+                                      RequestContext(request,{'softs':get_show_softs(request)}))
                                   
         elif request.POST.has_key('sync'):
-            softs = softwares.objects.all()
             infos = sync_software()
-            return render_to_response("show_softs.html", RequestContext(request, 
-                                                                        {
-                                                                         'softs':softs,
-                                                                         'infos':infos
-                                                                         }))          
+            return render_to_response("show_softs.html", 
+                                      RequestContext(request, {'softs':get_show_softs(request),'infos':infos}))          
 @login_required
 def graph_db_show(request):
     if request.method == "GET":
-        softs = softwares.objects.all()
-        pages = Paginator(softs,20)
-        page = request.GET.get("page")
-        show_softs = None
-        try:
-            show_softs = pages.page(page)
-        except PageNotAnInteger:
-            show_softs = pages.page(1)
-        except EmptyPage:
-            show_softs = pages.page(pages.num_pages)
         return render_to_response("graph_database.html",
-                                  RequestContext(request, {'softs':show_softs, "user":request.user}))
+                                  RequestContext(request, {'softs':get_show_softs(request)}))
     else:
         if request.POST.has_key("create_db"):
             soft_id = int(request.POST['soft_id'])
@@ -144,9 +124,7 @@ def graph_manager(request):
         else:
             status = "NO_DB"
         return render_to_response("graph_status.html", 
-                                  RequestContext(request, {'infos':infos,
-                                                           'status':status,
-                                                           'user':request.user}))
+                                  RequestContext(request, {'infos':infos,'status':status}))
     else:
         if request.POST.has_key('start_db'):
             soft_id = int(request.POST['start'])
@@ -166,9 +144,7 @@ def graph_manager(request):
                 status = "NO_DB"
                 
             return render_to_response("graph_status.html", 
-                                      RequestContext(request, {'infos':infos,
-                                                                "status":status,
-                                                                'user':request.user}))
+                                      RequestContext(request, {'infos':infos,"status":status}))
         elif request.POST.has_key('stop_db'):
             soft_id = int(request.POST['stop']) 
             stop_neo4j_db(soft_id)
@@ -185,9 +161,7 @@ def graph_manager(request):
                 status = "NO_DB"
                 
             return render_to_response("graph_status.html", 
-                                      RequestContext(request, {'infos':infos,
-                                                                "status":status,
-                                                                "user":request.user}))
+                                      RequestContext(request, {'infos':infos,"status":status}))
         elif request.POST.has_key("start"):
             start_character_db()
             
@@ -203,9 +177,7 @@ def graph_manager(request):
                 status = "NO_DB"
                 
             return render_to_response("graph_status.html", 
-                                      RequestContext(request, {'infos':infos,
-                                                                "status":status,
-                                                                "user":request.user}))
+                                      RequestContext(request, {'infos':infos,"status":status}))
         elif request.POST.has_key("shut_down"):
             stop_character_db()
             
@@ -221,6 +193,4 @@ def graph_manager(request):
                 status = "NO_DB"
                 
             return render_to_response("graph_status.html", 
-                                      RequestContext(request, {'infos':infos,
-                                                               "status":status,
-                                                               "user":request.user}))
+                                      RequestContext(request, {'infos':infos,"status":status}))
