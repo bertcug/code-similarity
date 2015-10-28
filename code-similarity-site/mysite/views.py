@@ -5,7 +5,7 @@ from django.shortcuts import render_to_response, render
 from django.template.context import RequestContext
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse, HttpResponseRedirect
-from urllib2 import HTTPRedirectHandler
+from django.core.urlresolvers import reverse
 
 
 class UserForm(forms.Form):
@@ -24,7 +24,10 @@ def mylogin(request):
             if user:
                 if user.is_active:
                     auth.login(request, user)
-                    return HttpResponseRedirect("index")
+                    if request.GET.has_key("next"):
+                        return HttpResponseRedirect(request.GET["next"])
+                    else:
+                        return HttpResponseRedirect(reverse("index"))
                 else:
                     return HttpResponse("该用户已失效,请联系管理员!")
             else:
@@ -38,5 +41,4 @@ def mylogin(request):
 
 @login_required
 def myindex(request):
-    user = request.user
     return render_to_response("index.html", RequestContext(request))

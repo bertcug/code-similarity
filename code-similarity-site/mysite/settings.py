@@ -15,6 +15,7 @@ import ConfigParser
 from os import makedirs
 import os
 import shutil
+from django.conf.global_settings import LOGIN_URL
 
 
 
@@ -125,11 +126,13 @@ STATICFILES_DIRS = [
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
-    # 'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     # 'django.contrib.staticfiles.finders.DefaultStorageFinder',
 )
 
-# user define variables
+#session manager
+SESSION_EXPIRE_AT_BROWSER_CLOSE=True
+
 # user define variables
 conf_file = os.path.join(BASE_DIR, "site.conf")   
 conf = ConfigParser.ConfigParser()

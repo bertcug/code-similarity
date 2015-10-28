@@ -16,24 +16,15 @@ Including another URLconf
 from django.conf.urls import include, url
 from django.contrib import admin
 import views
-from diffHandle import urls as diff_urls
-import software_manager
-import redebug_algorithm
-import astLevel_algorithm
-import graph_algorithm
 
 urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
-    url(r'^$', views.mylogin),
-    url(r'^login/', views.mylogin, name="login"),
-    url(r'^diffTest/', include(diff_urls, namespace="diff")),
+    url(r'^accounts/login/$', views.mylogin, name="login"),
+    url(r'^$', views.myindex),
+    url(r'^diffTest/', include("diffHandle.urls", namespace="diff")),
     url(r'^index/$', views.myindex, name="index"),
-    
-    url(r'^software_manager/', include("software_manager.urls", namespace="software")),
-               
-    url(r'^algorithm/redebug_algorithm/',include("redebug_algorithm.urls", namespace="redebug_algorithm")),
-               
-    url(r"^algorithm/ast_level/", include("astLevel_algorithm.urls", namespace="ast")),
-               
+    url(r'^software_manager/', include("software_manager.urls", namespace="software")),           
+    url(r'^algorithm/redebug_algorithm/',include("redebug_algorithm.urls", namespace="redebug_algorithm")),          
+    url(r"^algorithm/ast_level/", include("astLevel_algorithm.urls", namespace="ast")),          
     url(r"^algorithm/graph/", include("graph_algorithm.urls", namespace="graph")),
 ]
