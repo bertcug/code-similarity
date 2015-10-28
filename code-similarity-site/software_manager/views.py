@@ -22,7 +22,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 class soft_info_form(forms.Form):
     soft_name = forms.CharField(label = u"软件名称", max_length = 50)
     soft_version = forms.CharField(label = u"软件版本", max_length = 20)
-    source = forms.FileField(label = u"软件源码包")
+    source = forms.FileField(label = u"软件源码包(tar.gz)")
 
 def untar(file, dir):
     t = tarfile.open(file)

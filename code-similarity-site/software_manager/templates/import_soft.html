@@ -1,20 +1,32 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>软件导入</title>
-</head>
-<body>
-	<h2 align="center">软件信息导入</h2>
-	<div align="center">
-		<form method="post" enctype="multipart/form-data">
-			{% csrf_token %}
-			<table>
-			{{ soft.as_table }}
-			</table>
-			<input type="submit" value="上传">
-		</form>
-	</div>
+{% extends "../../mysite/templates/base.html" %}
+{% load bootstrap3 %}
+{% block title %}<title>漏洞软件上传</title>{% endblock %}
+{% block addon %}
+<script type="text/javascript">
+function checkType(){
+	obj = document.getElementById('id_source');
+	if(obj.value.endsWith("tar.gz")){
+		return true;
+	}else{
+		document.getElementById('warn').hidden="";
+		return false;
+	}
+}
+</script>
+{% endblock %}
 
-</body>
-</html>
+{% block content_body %}
+<div class="row col-lg-10 col-lg-offset-1">
+<div class="panel panel-primary">
+	<div class="panel-heading"><div class="text-center">漏洞软件上传</div></div>
+	<div class="panel-body">
+		<form method="post" enctype="multipart/form-data" onsubmit="return checkType()">
+		{% csrf_token %}
+		{% bootstrap_form soft %}
+		<input class="btn btn-success btn-block" type="submit" value="上传">
+		</form>
+		<br>
+		<div id="warn" class="text-center text-danger" hidden="hidden">请上传tar.gz文件</div>
+	</div>
+</div>
+{% endblock %}

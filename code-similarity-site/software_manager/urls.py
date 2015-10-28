@@ -11,4 +11,5 @@ urlpatterns = {
                url(r'^show/$', views.software_show, name="show"),
                url(r'^graphDB/$', views.graph_db_show, name="graphDB"),
                url(r'^graphDB_status/$', views.graph_manager, name="graph_status"),
+               url(r"^import_soft", views.software_import, name="import_soft"),
                }

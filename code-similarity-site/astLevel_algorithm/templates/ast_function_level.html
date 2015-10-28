@@ -7,7 +7,9 @@
 	<h3 align="center">漏洞函数/补丁后函数比较</h3>
 	<div align="center" width=80%>
 		<form method="post" align="center">
-			{% csrf_token %} {{ funcs.as_table }} <input type="submit" value="计算">
+			{% csrf_token %} 
+			{{ funcs.as_table }} 
+			<input type="submit" value="计算">
 		</form>
 	</div>
 	<br><div style="border-bottom:1px dashed;width=80%"></div><br>

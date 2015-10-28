@@ -23,7 +23,7 @@ def database_creat_thread(soft_id):
         neo4j_location = settings.NEO4J_DATABASE_PATH + \
                 soft.software_name + "-" + soft.software_version
         
-        cmd_str = "java -jar /home/bert/Documents/joern-0.3.1/bin/joern.jar " + source_location +" -outdir " + neo4j_location
+        cmd_str = "java -jar " + settings.JOERN_PATH + " " + source_location +" -outdir " + neo4j_location
     
         soft.neo4j_db = "pending"
         soft.save()
