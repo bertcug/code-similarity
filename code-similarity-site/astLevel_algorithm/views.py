@@ -14,7 +14,7 @@ from astLevel_algorithm.util.algorithm.util import vuln_patch_compare, \
     ast_match_info
 from diffHandle.models import vulnerability_info
 from mysite import settings
-from software_manager.util.database_proc import is_character_db_on
+from software_manager.util.database_proc import is_db_on
 
 
 try:
@@ -81,7 +81,7 @@ def cal_funcs_similarity(request):
             return HttpResponse("已经计算过该函数")
         except func_similarity_reports.DoesNotExist:
             if os.path.isdir(os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db", "index")):
-                if is_character_db_on():
+                if is_db_on():
                     neo4jdb = JoernSteps()
                     try:
                         neo4jdb.setGraphDbURL('http://localhost:7474/db/data/')

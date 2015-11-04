@@ -12,8 +12,8 @@ from util.sync_soft import sync_software
 from django.contrib.auth.decorators import login_required
 from threading import Thread
 from util.database_proc import database_creat_thread
-from software_manager.util.database_proc import start_neo4j_db, stop_neo4j_db,\
-    is_character_db_on, start_character_db, stop_character_db
+from software_manager.util.database_proc import start_neo4j_db, stop_neo4j_db
+from software_manager.util.database_proc import start_character_db, stop_character_db, is_db_on
 from diffHandle.models import vulnerability_info
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
@@ -113,18 +113,25 @@ def graph_db_show(request):
             
 def graph_manager(request):
     if request.method == "GET":
+        #检测各数据的真实状态,因为如果服务器崩溃,数据库里的状态与真实状态不一致
         infos = graph_dbs.objects.all()
+        for info in infos:
+            if info.status == "started" and not is_db_on(info.port):
+                info.status = "stoped"
+                info.port = 0
+                info.save()
+                       
         status = ""
         obs = vulnerability_info.objects.filter(is_in_db=True)
         if len(obs) > 0:
-            if is_character_db_on():
+            if is_db_on():
                 status = "ON"
             else:
                 status = "OFF"
         else:
             status = "NO_DB"
         return render_to_response("graph_status.html", 
-                                  RequestContext(request, {'infos':infos,'status':status}))
+                                  RequestContext(request, {'infos':graph_dbs.objects.all(),'status':status}))
     else:
         if request.POST.has_key('start_db'):
             soft_id = int(request.POST['start'])
@@ -136,7 +143,7 @@ def graph_manager(request):
             status = ""
             obs = vulnerability_info.objects.filter(is_in_db=True)
             if len(obs) > 0:
-                if is_character_db_on():
+                if is_db_on():
                     status = "ON"
                 else:
                     status = "OFF"
@@ -153,7 +160,7 @@ def graph_manager(request):
             status = ""
             obs = vulnerability_info.objects.filter(is_in_db=True)
             if len(obs) > 0:
-                if is_character_db_on():
+                if is_db_on():
                     status = "ON"
                 else:
                     status = "OFF"
@@ -169,7 +176,7 @@ def graph_manager(request):
             status = ""
             obs = vulnerability_info.objects.filter(is_in_db=True)
             if len(obs) > 0:
-                if is_character_db_on():
+                if is_db_on():
                     status = "ON"
                 else:
                     status = "OFF"
@@ -185,7 +192,7 @@ def graph_manager(request):
             status = ""
             obs = vulnerability_info.objects.filter(is_in_db=True)
             if len(obs) > 0:
-                if is_character_db_on():
+                if is_db_on():
                     status = "ON"
                 else:
                     status = "OFF"

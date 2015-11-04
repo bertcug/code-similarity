@@ -2,11 +2,13 @@
 from joern.all import JoernSteps
 from igraph import Graph
 from base import *
+from astLevel_algorithm.util.algorithm.util import *
 from astLevel_algorithm.util.algorithm.util import getAllFuncs,\
 getFuncRetType, getFuncParamList, filterFuncs, getFuncNode
 import time
 from diffHandle.models import vulnerability_info
 from graph_algorithm.models import pdg_vuln_patch_funcs_report
+from astLevel_algorithm.models import bug_finder_logs
 
 def translatePDG(db,func_name) :
     func_id = getFuncId(db, func_name)  
@@ -69,33 +71,43 @@ def cal_similarity(srcPDG,tarPDG,vertexMap):
             count +=1
     return round(float(count)/float(sum), 2)
 
-def func_similarity_pdgLevel(db1,db2,func_Name):
-    tarPDG = translatePDG(db2,func_Name)
+def func_similarity_pdgLevel_proc(soft, db1, db2, vuln_infos):
     allFuncs = getAllFuncs(db1)
-    retType = getFuncRetType(getFuncId(db2,func_Name),db2)
-    paramList = getFuncParamList(getFuncId(db2,func_Name),db2)
-    funcList = filterFuncs(db1,allFuncs,retType,paramList)
-    #计算相似度
-    similarity = []
-    for func in funcList:
-        srcPDG = translatePDGById(db1,func)
-        results = srcPDG.get_subisomorphisms_vf2(other = tarPDG,
-                                                 node_compat_fn = node_compat_fn,
-                                                 edge_compat_fn = edge_compat_fn)
-        if len(results) == 0:
-            return 0
-        else:
-            similarity = []
-            for result in results:
-                similarity.append(cal_similarity(srcPDG, tarPDG, result))	
-    if len(similarity) == 0:
-        return 0
-    else:
-        max_similarity = similarity[0]
-        for eachone in similarity:
-            if eachone > max_similarity:
-                max_similarity = eachone
-        return max_similarity
+    
+    for vuln in vuln_infos:
+        info = vulnerability_info.objects.get(vuln_id=int(vuln))
+        try:
+            bug_finder_logs.objects.get(algorithm_type="CFG", target_soft=soft, target_vuln=info)
+            continue
+        except bug_finder_logs.DoesNotExist:
+            pass
+            
+        func_name = info.cve_info.cveid.replace(u"-", u"_").upper() + u"_VULN_" + info.vuln_func
+        
+        #获取过滤后的待比对函数集
+        ast_root = getASTRootNodeByName(func_name, db2)
+        retType = getFuncRetType(ast_root,db2)
+        paramList = getFuncParamList(ast_root,db2)
+        funcList = filterFuncs(db1,allFuncs,retType,paramList)
+        func_node = getFuncNode(func_name, db2)
+        
+        report_list=[]
+        #逐个计算
+        for func in funcList:
+            flag, simi = func_pdg_similarity(func, db1, func_node, db2)
+            if flag:
+                report = {"func_name":func.properties["name"], "match":flag, "simi_rate":simi}
+                func_file = getFuncFile(db1, func)[len(soft.sourcecodepath):]
+                report["func_file":func_file]
+                report_list.append(report)
+                
+        #形成报告,写入数据库
+        log = bug_finder_logs()
+        log.algorithm_type = "PDG"
+        log.target_soft = soft
+        log.target_vuln = vuln
+        log.cal_report = pickle.dumps(report_list)
+        log.save()
 
 def func_pdg_similarity(func1, db1, func2, db2):
     srcPDG = translatePDGById(db1, func1._id)

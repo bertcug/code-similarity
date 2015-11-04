@@ -39,7 +39,7 @@ function modi_value(id){
 					<input class="btn btn-xs btn-success {% if not user.is_staff %}disabled{% endif %}"
 					 type="submit" name="create_db"
 					 value="生成"
-					 onclick="modi_value({{ soft.software_id }}">
+					 onclick="modi_value({{ soft.software_id }})">
 				</td>
 				{% elif soft.neo4j_db == "pending" %}
 				<td align="center">生成中</td>

@@ -10,8 +10,6 @@ import time
 from SerializedAST import serializedAST
 from astLevel_algorithm.models import func_similarity_reports
 from diffHandle.models import vulnerability_info
-from software_manager.util.database_proc import is_character_db_on, \
-    start_character_db
 
 
 try:

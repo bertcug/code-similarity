@@ -5,7 +5,6 @@
 
 
 {% block content_body %}
-<a href="../algorithm/graph/bug_finder_cfg">CFG</a>
 	<div name="soft_manager" align="center">
 		<table border="1" width=80%>
 			<caption align="center">
@@ -17,12 +16,14 @@
 			<tr>
 				<td align="center"><a href="../software_manager/show">软件源码列表</a></td>
 			</tr>
+			{% if user.is_staff %}
 			<tr>
 				<td align="center"><a href="../software_manager/graphDB/">图形数据库管理</a></td>
 			</tr>
 			<tr>
 				<td align="center"><a href="../software_manager/graphDB_status/">图形数据库启动/关闭</a></td>
 			</tr>
+			{% endif %}
 			
 		</table>
 	</div>
@@ -61,43 +62,46 @@
 		</table>
 	</div>
 	{% endif %}
+	
 	{% if user.is_staff %}
-	<div name="ast" align="center">
-		<table border="1" width=80%>
+	<div name="vuln_patch_compare" align="center">
+		<table border="1" class="col-lg-8 col-lg-offset-2">
 			<caption align="center">
-				<h2 class="text-center">基于AST的代码相似性检测</h2>
+				<h2 class="text-center">漏洞函数/补丁函数相似性比较</h2>
 			</caption>
 			<tr>
-				<td align="center"><a
-					href="../algorithm/ast_level/func_similarity">漏洞函数/补丁函数相似性比较</a>
+				<td align="center">
+				<a href="../algorithm/ast_level/func_similarity">基于AST算法</a>
+				</td>
+				
+				<td align="center">
+				<a href="../algorithm/graph/func_cfg_similarity">基于CFG算法</a>
+				</td>
+				
+				<td align="center">
+				<a href="../algorithm/graph/func_pdg_similarity">基于PDG算法</a>
+				</td>
 			</tr>
 		</table>
 	</div>
 	{% endif %}
+	
 	{% if user.is_staff %}
-	<div name="cfg" align="center">
-		<table border="1" width=80%>
+	<div name="bug_find" align="center">
+		<table border="1" class="col-lg-8 col-lg-offset-2">
 			<caption align="center">
-				<h2 class="text-center">基于CFG的代码相似性检测</h2>
+				<h2 class="text-center">漏洞搜索</h2>
 			</caption>
 			<tr>
-				<td align="center"><a
-					href="../algorithm/graph/func_cfg_similarity">漏洞函数/补丁函数相似性比较</a>
+			
+				<td align="center">
+				<a href="../algorithm/graph/bug_finder">基于CFG算法</a>
+				</td>
+				
 			</tr>
+			<tr><td align="center"><a href="">搜索记录</a></td></tr>
 		</table>
 	</div>
 	{% endif %}
-	{% if user.is_staff %}
-	<div name="pdg" align="center">
-		<table border="1" width=80%>
-			<caption align="center">
-				<h2 class="text-center">基于PDG的代码相似性检测</h2>
-			</caption>
-			<tr>
-				<td align="center"><a
-					href="../algorithm/graph/func_pdg_similarity">漏洞函数/补丁函数相似性比较</a>
-			</tr>
-		</table>
-	</div>
-	{% endif %}
+	
 {% endblock %}

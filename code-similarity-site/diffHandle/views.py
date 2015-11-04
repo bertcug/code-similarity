@@ -14,7 +14,7 @@ import hashlib
 from diffHandle.util.handle_diff import handle_diff_file
 from diffHandle.util.db_funcs import all_in_db, del_all
 from threading import Thread
-from software_manager.util.database_proc import is_character_db_on
+from software_manager.util.database_proc import is_db_on
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 # Create your views here.
@@ -212,7 +212,7 @@ def view_diff(request):
         return render_to_response("diff_view.html",RequestContext(request,{'infos':get_show_infos(request)}))
     #全部加入特征数据库    
     elif request.POST.has_key("all_in_db"):
-        if is_character_db_on():
+        if is_db_on():
             return HttpResponse("特征数据库已启动，请关闭后重试！关闭前请确认无任何使用情况")
         
         th = Thread(target=all_in_db)
@@ -221,7 +221,7 @@ def view_diff(request):
     
     #全部删除特征数据库
     elif request.POST.has_key("del_all"):
-        if is_character_db_on():
+        if is_db_on():
             return HttpResponse("特征数据库已启动，请关闭后重试！关闭前请确认无任何使用情况")
         
         del_all()

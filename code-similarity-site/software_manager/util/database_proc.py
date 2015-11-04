@@ -12,7 +12,7 @@ import socket
 
 def database_creat_thread(soft_id):
     soft = softwares.objects.get(software_id = soft_id)
-    if os.path.isdir(soft.neo4j_db):
+    if soft.neo4j_db and os.path.isdir(soft.neo4j_db):
         return 
     
     try:
@@ -20,10 +20,11 @@ def database_creat_thread(soft_id):
     except graph_dbs.DoesNotExist:
     
         source_location = soft.sourcecodepath
-        neo4j_location = settings.NEO4J_DATABASE_PATH + \
-                soft.software_name + "-" + soft.software_version
+        neo4j_location = os.path.join(settings.NEO4J_DATABASE_PATH,soft.__str__())
         
-        cmd_str = "java -jar " + settings.JOERN_PATH + " " + source_location +" -outdir " + neo4j_location
+        cmd_str = "java -jar " + settings.JOERN_PATH + " "\
+         + source_location + " -outdir " + neo4j_location + " > "\
+          + os.path.join(neo4j_location, "create_logs")
     
         soft.neo4j_db = "pending"
         soft.save()
@@ -72,10 +73,10 @@ def stop_neo4j_db(soft_id):
     g.port = 0
     g.save()
 
-def is_character_db_on():
+def is_db_on(port=7474):
     s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     try:
-        s.connect(("127.0.0.1",7474))
+        s.connect(("127.0.0.1",port))
         s.shutdown(2) 
         return True
     except:
@@ -83,7 +84,7 @@ def is_character_db_on():
 
 def start_character_db():
     
-    if is_character_db_on():
+    if is_db_on():
         return True
     else:
         conf_file = os.path.join(settings.NEO4J_DATABASE_PATH,"neo4j", "conf/neo4j-server.properties")
@@ -97,7 +98,7 @@ def start_character_db():
         os.system(start_cmd)
 
 def stop_character_db():
-    if is_character_db_on():   
+    if is_db_on():   
         stop_cmd = os.path.join(settings.NEO4J_DATABASE_PATH,"neo4j","bin/neo4j") + " stop"
         os.system(stop_cmd)
         return True

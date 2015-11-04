@@ -75,13 +75,13 @@ def func_similarity_cfgLevel_proc(soft, db1, db2, vuln_infos):
     allFuncs = getAllFuncs(db1)
     
     for vuln in vuln_infos:
+        info = vulnerability_info.objects.get(vuln_id=int(vuln))
         try:
-            bug_finder_logs.objects.get(algorithm_type="CFG", target_soft=soft, target_vuln=vuln)
+            bug_finder_logs.objects.get(algorithm_type="CFG", target_soft=soft, target_vuln=info)
             continue
         except bug_finder_logs.DoesNotExist:
             pass
             
-        info = vulnerability_info.objects.get(vuln_id=int(vuln))
         func_name = info.cve_info.cveid.replace(u"-", u"_").upper() + u"_VULN_" + info.vuln_func
         
         #获取过滤后的待比对函数集
