@@ -172,6 +172,6 @@ def make_base_dirs():
     if not os.path.isdir(NEO4J_DATABASE_PATH):
         os.makedirs(NEO4J_DATABASE_PATH)
         os.makedirs(os.path.join(NEO4J_DATABASE_PATH, "vuln_db", "create_logs"))
-        if os.path.isdir(NEO4J_HOME):
-            shutil.copytree(NEO4J_HOME, os.path.join(NEO4J_DATABASE_PATH, "neo4j"))
+    if os.path.isdir(NEO4J_HOME) and not os.path.exists(os.path.join(NEO4J_DATABASE_PATH, "neo4j")):
+        shutil.copytree(NEO4J_HOME, os.path.join(NEO4J_DATABASE_PATH, "neo4j"))
         

@@ -52,3 +52,7 @@ def cal_redebug(request):
         else:
             return render_to_response("cal_redebug.html",
                                   RequestContext(request, {'form':form}))       
+
+def view_detail(request, report_id):
+    obj = redebug_reports.objects.get(reports_id=report_id)
+    return HttpResponse(obj.html_report)

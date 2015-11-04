@@ -39,3 +39,8 @@ def isNodeExist(g,nodeName) :
         return False
     else:
         return nodeName in g.vs['name']
+
+def getFuncFile(db, func_node):
+    query = "g.v(%d).in('IS_FILE_OF')" % func_node._id
+    ret = db.runGremylinQuery(query)
+    return ret[0]

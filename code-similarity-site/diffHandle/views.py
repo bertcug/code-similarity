@@ -158,8 +158,7 @@ def import_vuln_info(request):
                     return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
                 
         else:
-            return render_to_response("import_vuln.html",
-                                      RequestContext(request,{'vuln_info':vuln_info}))
+            return render_to_response("import_vuln.html", RequestContext(request,{'vuln_info':vuln_info}))
 
 def get_show_infos(request):
     infos = vulnerability_info.objects.all()
@@ -178,8 +177,7 @@ def get_show_infos(request):
 @login_required 
 def view_diff(request):
     if request.method == "GET":  
-        return render_to_response("diff_view.html", 
-                                  RequestContext(request,{'infos':get_show_infos(request)}))
+        return render_to_response("diff_view.html", RequestContext(request,{'infos':get_show_infos(request)}))
     #处理单个diff
     elif request.POST.has_key('prase_diff'):
         id = request.POST['vuln_id']
@@ -187,8 +185,7 @@ def view_diff(request):
         
         handle_diff_file(vuln)
 
-        return render_to_response("diff_view.html",
-                                RequestContext(request, {'infos':get_show_infos(request)}))
+        return render_to_response("diff_view.html",RequestContext(request, {'infos':get_show_infos(request)}))
     #清除所有diff    
     elif request.POST.has_key("clear_all"):
         infos = vulnerability_info.objects.all()
@@ -203,8 +200,7 @@ def view_diff(request):
                 info.patched_func_source = ""
             info.save()
         
-        return render_to_response("diff_view.html", 
-                                  RequestContext(request,{'infos':get_show_infos(request)}))
+        return render_to_response("diff_view.html",RequestContext(request,{'infos':get_show_infos(request)}))
     #生成所有diff 
     elif request.POST.has_key("make_all"):
         infos = vulnerability_info.objects.all()
@@ -213,8 +209,7 @@ def view_diff(request):
                 handle_diff_file(info)
         
         
-        return render_to_response("diff_view.html", 
-                                  RequestContext(request,{'infos':get_show_infos(request)}))
+        return render_to_response("diff_view.html",RequestContext(request,{'infos':get_show_infos(request)}))
     #全部加入特征数据库    
     elif request.POST.has_key("all_in_db"):
         if is_character_db_on():

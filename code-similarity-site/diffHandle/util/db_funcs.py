@@ -31,7 +31,7 @@ def all_in_db():
     if not os.path.isdir(os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db","create_logs")):
         os.makedirs(os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db","create_logs"))
     log = os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db","create_logs", time.time().__str__())
-    cmd_str = "java -jar /home/bert/Documents/joern-0.3.1/bin/joern.jar "\
+    cmd_str = "java -jar " + settings.JOERN_PATH + " "\
                 + os.path.join(settings.TMP_PATH, "db_files") + " -outdir "\
                 + os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db") + " > " + log
     

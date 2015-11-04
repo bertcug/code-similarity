@@ -14,6 +14,10 @@ from joern.all import JoernSteps
 from threading import Thread
 from algorithm.func_similarity_cfgLevel import func_cfg_similarity_proc
 from algorithm.func_similarity_pdgLevel import func_pdg_similarity_proc
+from django import forms
+from itertools import chain
+from software_manager.models import softwares
+from django.db.models import QuerySet
 # Create your views here.
 
 @login_required
@@ -77,4 +81,36 @@ def func_pdg_comp_view(request):
             else:
                 return HttpResponse(u"特征数据库不存在")
         
-    
+class software_sel_form(forms.Form):
+    software = forms.ModelChoiceField(queryset=softwares.objects.all(), empty_label=None, label="漏洞软件")
+
+def bug_finder_cfg(request):
+    if request.method == "GET":
+        software_sel = software_sel_form()
+        return render_to_response("bug_finder_cfg.html", RequestContext(request, {"software_sel":software_sel}))
+    else:
+        if request.POST.has_key("sel_vuln"):
+            soft_id = int(request.POST.get("software"))
+            soft_name = softwares.objects.get(software_id=soft_id).software_name
+            softs = softwares.objects.filter(software_name = soft_name)
+            cves = []
+            for soft in softs:
+                cves.extend(soft.cve_infos_set.all())
+                
+            sel_vuln = vulnerability_info.objects.filter(cve_info__in = cves, is_in_db=True)
+            
+            software_sel = software_sel_form(request.POST)
+            
+            return render_to_response("bug_finder_cfg.html", 
+                                      RequestContext(request, {"sel_vuln":sel_vuln,"software_sel":software_sel}))
+            
+        elif request.POST.has_key("find"):
+            if not is_character_db_on():
+                return HttpResponse(u"特征数据库未启动，请先启动特征数据库")
+            
+            l = request.POST.getlist("vuln_infos")
+            
+            
+            
+            
+            

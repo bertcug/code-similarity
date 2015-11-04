@@ -25,7 +25,7 @@ def getDiffContents(diff_file, file_name):
     start_pos = last_pos = 0
     
     for line_num in range(line_sum):
-        if file_name in file_contents[line_num]:
+        if os.path.basename(file_name) in file_contents[line_num]:
             start_pos = line_num
             
     for line_num in range(start_pos, line_sum):
@@ -104,7 +104,7 @@ def writePatchedFile(cveid, func_name, patched_file, vunl_func_src, diff_content
 def getDiffContentStart(diff_contents, vunl_file):
     lines = []
     line_sum = len(diff_contents)
-    reg = r"\+{3}(.*)%s" % vunl_file
+    reg = r"\+{3}(.*)%s" % os.path.basename(vunl_file)
     
     start = 0
     for line_num in range(line_sum):
