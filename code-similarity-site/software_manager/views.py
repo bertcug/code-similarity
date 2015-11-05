@@ -23,12 +23,11 @@ class soft_info_form(forms.Form):
     soft_name = forms.CharField(label = u"软件名称", max_length = 50)
     soft_version = forms.CharField(label = u"软件版本", max_length = 20)
     source = forms.FileField(label = u"软件源码包(tar.gz)")
+    
 
 def untar(file, dir):
-    t = tarfile.open(file)
-    if not os.path.isdir(dir):
-        os.makedirs(dir)
-        
+    #不能处理目录里有中文的情况,不清楚为什么...
+    t = tarfile.open(file, "r:gz")   
     t.extractall(path = dir)
     return dir
 
@@ -59,16 +58,16 @@ def software_import(request):
             file = request.FILES['source']
             
             #upload source to tmp path
-            f = open(settings.TMP_PATH + name + version, "wb")
+            f = open(os.path.join(settings.TMP_PATH, name + version), "wb")
             for chunk in file.chunks():
                 f.write(chunk)
             f.close()
             
             # untar the uploaded file
-            dir = untar(settings.TMP_PATH + name + version, 
-                        settings.SOFTWARE_PATH + name.lower() + r"/" + name + "-" + version)
+            dir = untar(os.path.join(settings.TMP_PATH, name + version), 
+                        os.path.join(settings.SOFTWARE_PATH, name.lower(), name + "-" + version))
             #remove the tmp file
-            os.remove(settings.TMP_PATH + name + version)
+            os.remove(os.path.join(settings.TMP_PATH, name + version))
             
             #save into databases
             software = softwares(software_name = name,
@@ -109,7 +108,7 @@ def graph_db_show(request):
             th = Thread(target=database_creat_thread, args=(soft_id,))
             th.start()
             
-            return HttpResponse("已启动线程为该软件生成图形数据库，敬请耐心等待！")
+            return HttpResponse(u"已启动线程为该软件生成图形数据库，敬请耐心等待！")
             
 def graph_manager(request):
     if request.method == "GET":

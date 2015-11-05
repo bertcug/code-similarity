@@ -1,12 +1,10 @@
 #coding=utf-8
 
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render_to_response
 from redebug_algorithm.models import redebug_reports
 from django.template.context import RequestContext
-from diffHandle.models import vulnerability_info, cve_infos
+from diffHandle.models import  cve_infos
 from django import forms
-import string
-from util import redebug
 from django.http.response import HttpResponse
 from software_manager.models import softwares
 from threading import Thread
@@ -21,10 +19,10 @@ def viewall(request):
                               RequestContext(request, {'infos':infos}))
     
 class redebug_form(forms.Form):
-    soft_sel = forms.ModelChoiceField(label="软件信息", 
+    soft_sel = forms.ModelChoiceField(label=u"软件信息", 
                                  queryset=softwares.objects.all(),
                                   empty_label=None)
-    diff_sel = forms.ModelChoiceField(label="补丁信息",
+    diff_sel = forms.ModelChoiceField(label=u"补丁信息",
                                        queryset=cve_infos.objects.all(),
                                         empty_label=None)
     
@@ -48,7 +46,7 @@ def cal_redebug(request):
                 p = Thread(target=proc_func, args=(soft_id,diff_id))
                 p.start()
                 
-                return HttpResponse("已启动进程进行计算,请稍后转至测试记录汇总界面查看计算结果")
+                return HttpResponse(u"已启动进程进行计算,请稍后转至测试记录汇总界面查看计算结果")
         else:
             return render_to_response("cal_redebug.html",
                                   RequestContext(request, {'form':form}))       

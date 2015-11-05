@@ -15,7 +15,9 @@ import ConfigParser
 from os import makedirs
 import os
 import shutil
-from django.conf.global_settings import LOGIN_URL
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")  # @UndefinedVariable
 
 
 
