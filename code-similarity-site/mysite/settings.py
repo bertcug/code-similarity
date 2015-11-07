@@ -97,7 +97,7 @@ DATABASES = {
         'NAME': 'code_similarity',
         'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': "bert",
+        'USER': "root",
         'PASSWORD': "8089630",
     }
 }

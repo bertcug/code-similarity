@@ -33,6 +33,7 @@ class ast_match_info():
                 "distinct_type_no_const":self.distinct_type_no_const,
                 "distinct_const_no_type":self.distinct_const_no_type,
                 "no_type_no_const":self.no_type_no_const}
+        
     def __init__(self, member_dict):
         self.distinct_type_and_const = member_dict["distinct_type_and_const"]
         self.distinct_type_no_const = member_dict["distinct_type_no_const"]
@@ -149,7 +150,7 @@ def func_similarity_astLevel(db1, funcs, db2, func_name):
             report.no_type_no_const = True
             
         if report.is_valid():
-            report_dict[func] = pickle.dumps(report.get_dict())
+            report_dict[func] = pickle.dumps(report)
     
     end_time = time.time()
     cost = end_time - start_time

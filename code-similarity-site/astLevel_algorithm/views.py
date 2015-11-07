@@ -48,7 +48,7 @@ class cal_reports():
             self.cost = 0
         else:
             self.status = "计算完成"
-            match_info = ast_match_info(pickle.loads(report.match_reports))
+            match_info = pickle.loads(report.match_reports.encode("ascii"))
             if match_info.is_valid():
                 if match_info.distinct_type_and_const:
                     self.match_reports += "<p>区分变量类型和常量时匹配</p>"
@@ -59,7 +59,7 @@ class cal_reports():
                 if match_info.no_type_no_const:
                     self.match_reports += "<p>不区分变量类型和常量时匹配</p>"
             else:
-                self.match_info = "无"
+                self.match_reports = "未匹配"
             
             self.cost = report.cost
         
