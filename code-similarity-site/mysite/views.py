@@ -8,6 +8,7 @@ from django.http.response import HttpResponse, HttpResponseRedirect
 from django.core.urlresolvers import reverse
 from diffHandle.models import vulnerability_info
 import os
+from django.core.mail import send_mail, get_connection
 
 class UserForm(forms.Form):
     user = forms.CharField(max_length=20, label=u"用户名")
@@ -41,5 +42,5 @@ def mylogin(request):
                               RequestContext(request, {'uf':user_form}))
 
 @login_required
-def myindex(request):    
+def myindex(request):
     return render_to_response("index.html", RequestContext(request))
