@@ -1,0 +1,69 @@
+{% extends '../../mysite/templates/base.html' %}
+{% block title %}<title>CFG Bug finder</title>{% endblock %}
+{% block addon %}
+<script type="text/javascript">
+function select_all(){
+	$('input[name="vuln_infos"]').prop("checked",$("#chk_all").prop("checked"));
+}
+</script>
+{% endblock %}
+
+{% block content_body %}
+{% load bootstrap3 %}
+<div class="row">
+<div class="col-lg-4 col-lg-offset-4">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<div class="text-center text-primay">选择漏洞软件</div>
+		</div>
+		<div class="panel-body">
+			<form method="post">
+				{% csrf_token %}
+				{% bootstrap_form software_sel %}
+				<div class="form-group">
+					<button name="sel_vuln" type="submit" class="btn btn-success btn-block">
+						选择漏洞<span class="glyphicon glyphicon-arrow-down"></span>
+					</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+{% if sel_vuln %}
+<div class="row" style="margin-top: 10px;">
+<div class="col-lg-8 col-lg-offset-2">
+	<div class="panel panel-info">
+		<div class="panel-heading">
+			<div class="text-center text-primay">选择漏洞函数</div>
+		</div>
+		<div class="panel-body">
+			<form method="post">
+			{% csrf_token %}
+			{% for vuln in sel_vuln %}
+			<div>
+				<input type="checkbox" name="vuln_infos" value="{{ vuln.vuln_id }}" /> 
+				<label class="text-default">{{ vuln }}</label>
+			</div>
+			{% endfor %}
+			<div>
+				<input id="chk_all" type="checkbox" onchange="select_all()" />
+				 <label>全选/反选</label>
+			</div>
+
+			<div class="text-center">
+				<input type="radio" name="algorithm" value="CFG" checked="checked" />
+				<label class="text-warning">CFG算法</label>
+				<input type="radio" name="algorithm" value="PDG" />
+				 <label class="text-warning">PDG算法</label>
+			</div>
+
+			<input type="submit" name="find" class="btn btn-primary btn-block" value="计算" />
+			</form>
+		</div>
+	</div>
+</div>
+</div>
+{% endif %}
+						
+{% endblock %}

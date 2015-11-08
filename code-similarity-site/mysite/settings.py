@@ -32,7 +32,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '052r7m=jisv#7wzfnflak$trhhjfly+#&ls%sr&7-6deggzs#1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = "*"
 
@@ -158,13 +158,14 @@ NEO4J_DATABASE_PATH = os.path.join(BASE_PATH, "NEO4J_DATABASE")
 EMAIL_HOST = 'smtp.163.com'                   
 EMAIL_PORT = 25                                 
 EMAIL_HOST_USER = 'cugNewAir@163.com'       
-EMAIL_HOST_PASSWORD = 'songlan2014'                  
+EMAIL_HOST_PASSWORD = 'songlab2014'                  
 EMAIL_SUBJECT_PREFIX = u'[code similarity]'                                       
 #The email address that error messages come from,
 # such as those sent to ADMINS and MANAGERS.
-SERVER_EMAIL = 'vuln_group@sina.com'
+SERVER_EMAIL = 'cugNewAir@163.com'
 ADMINS = (
     ('admin', '371418912@qq.com'),
+    ('bertcug', 'bertcug@gmail.com'),
 )            
 
 def make_base_dirs():
