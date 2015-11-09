@@ -156,7 +156,7 @@ class serializedAST:
             t = root.properties['type']
             
             if(t == 'IncDec'):
-                s_ast = root.properties['operator'] + "(%d)" % num + ";"
+                s_ast = root.properties['code'] + "(%d)" % num + ";"
                 return [s_ast, num]
             
             if (t == 'CastTarget' or t == 'UnaryOperator'):
