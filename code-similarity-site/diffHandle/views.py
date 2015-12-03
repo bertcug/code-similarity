@@ -27,6 +27,7 @@ class vuln_info_class(forms.Form):
     cve_id = forms.ModelChoiceField(queryset = cve_infos.objects.all(), empty_label=None, label = "cve编号") 
     vuln_func = forms.CharField(max_length = 100, label = "漏洞函数")
     vuln_func_file = forms.CharField(max_length = 100, label = "漏洞函数存在文件名")
+    vuln_type = forms.CharField(max_length=5, label="类型")
 
 @login_required 
 def import_diff(request):
@@ -153,6 +154,7 @@ def import_vuln_info(request):
                     info = vulnerability_info(cve_info = cve_info,
                                         vuln_func = vuln_info.cleaned_data['vuln_func'],
                                         vuln_file = vuln_file,
+                                        vuln_type = vuln_info.cleaned_data['vuln_info'],
                                         user = request.user)
                     info.save()
                     return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )

@@ -23,6 +23,7 @@ class vulnerability_info(models.Model):
     cve_info = models.ForeignKey(cve_infos)
     vuln_func = models.CharField( max_length = 100)
     vuln_file = models.CharField( max_length = 200)
+    vuln_type = models.CharField( max_length = 5, null=True )
     vuln_func_source = models.CharField( max_length = 200, null = True)
     patched_func_source = models.CharField( max_length = 200, null = True)
     user = models.ForeignKey(auth.models.User, null = True)
