@@ -154,7 +154,7 @@ def import_vuln_info(request):
                     info = vulnerability_info(cve_info = cve_info,
                                         vuln_func = vuln_info.cleaned_data['vuln_func'],
                                         vuln_file = vuln_file,
-                                        vuln_type = vuln_info.cleaned_data['vuln_info'],
+                                        vuln_type = vuln_info.cleaned_data['vuln_type'],
                                         user = request.user)
                     info.save()
                     return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
