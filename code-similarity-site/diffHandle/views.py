@@ -115,13 +115,13 @@ def import_vuln_info(request):
             vuln_file = ""
             
             if os.path.isfile(os.path.join(cve_info.vuln_soft.sourcecodepath, 
-                                           vuln_info.cleaned_data['vuln_func_file'])):
+                                           vuln_info.cleaned_data['vuln_func_file'].strip())):
                 #轻松找到
                 vuln_file = os.path.join(cve_info.vuln_soft.sourcecodepath, 
-                                           vuln_info.cleaned_data['vuln_func_file'])
+                                           vuln_info.cleaned_data['vuln_func_file'].strip())
             else:
                 #尝试搜索
-                files = get_vuln_file(os.path.basename(vuln_info.cleaned_data['vuln_func_file']),
+                files = get_vuln_file(os.path.basename(vuln_info.cleaned_data['vuln_func_file'].strip()),
                                       cve_info.vuln_soft.sourcecodepath)
                 #未搜索到
                 if len(files) == 0:
@@ -136,10 +136,22 @@ def import_vuln_info(request):
                     return render_to_response("import_vuln.html",
                                               RequestContext(request,{'vuln_info':vuln_info,
                                                                       'multi_file_found':True}))
-                
+            #允许函数名字段为空,填写的为None
+            if vuln_info.cleaned_data['vuln_func'].strip() == "None":
+                try:
+                    obj = vulnerability_info.objects.get(cve_info=cve_info, 
+                                                         vuln_file=vuln_info.cleaned_data['vuln_file'])
+                    return render_to_response("import_vuln.html",
+                                            RequestContext(request,{'vuln_info':vuln_info,
+                                                                    'already':True}))
+                except vulnerability_info.DoesNotExist:
+                    info = vulnerability_info(cve_info = cve_info,
+                                              vuln_file = vuln_file,
+                                              vuln_type = vuln_info.cleaned_data['vuln_type'].strip(),
+                                              user = request.user)
             try:
                 obj = vulnerability_info.objects.get(cve_info=cve_info,
-                                                    vuln_func = vuln_info.cleaned_data['vuln_func'])
+                                                    vuln_func = vuln_info.cleaned_data['vuln_func'].strip())
                 return render_to_response("import_vuln.html",
                                             RequestContext(request,{'vuln_info':vuln_info,
                                                                     'already':True}))
@@ -152,9 +164,9 @@ def import_vuln_info(request):
                                               RequestContext(request,{'vuln_info':vuln_info, 'no_func_found':True}))
                 else:
                     info = vulnerability_info(cve_info = cve_info,
-                                        vuln_func = vuln_info.cleaned_data['vuln_func'],
+                                        vuln_func = vuln_info.cleaned_data['vuln_func'].strip(),
                                         vuln_file = vuln_file,
-                                        vuln_type = vuln_info.cleaned_data['vuln_type'],
+                                        vuln_type = vuln_info.cleaned_data['vuln_type'].strip(),
                                         user = request.user)
                     info.save()
                     return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
@@ -174,6 +186,9 @@ def get_show_infos(request):
     except EmptyPage:
         show_infos = pages.page(pages.num_pages)
     
+    #获取文件相对路径
+    for info in show_infos:
+        info.vuln_file = info.vuln_file[len(info.cve_info.vuln_soft.sourcecodepath):]
     return show_infos
                
 @login_required 

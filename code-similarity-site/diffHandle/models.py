@@ -21,7 +21,7 @@ class cve_infos(models.Model):
 class vulnerability_info(models.Model):
     vuln_id = models.AutoField(primary_key = True)
     cve_info = models.ForeignKey(cve_infos)
-    vuln_func = models.CharField( max_length = 100)
+    vuln_func = models.CharField( max_length = 100, null=True)
     vuln_file = models.CharField( max_length = 200)
     vuln_type = models.CharField( max_length = 5, null=True )
     vuln_func_source = models.CharField( max_length = 200, null = True)

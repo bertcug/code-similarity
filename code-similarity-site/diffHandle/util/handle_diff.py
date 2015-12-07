@@ -34,7 +34,6 @@ def handle_diff_file(vuln):
                                       vuln.cve_info.diff_file,
                                       vuln.vuln_file,
                                       vuln.vuln_func,
-                                      vuln_func_src,
                                       patch_dir)
             
         vuln.vuln_func_source = vuln_func_src

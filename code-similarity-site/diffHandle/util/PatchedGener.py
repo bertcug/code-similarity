@@ -7,15 +7,18 @@ from VunlsGener import getFuncFromSrc
 from VunlsGener import replace_funcName
 
 
-def patchedGener(cve_id, soft_folder, diff_file, vunl_file, vunl_func, vunl_func_src, outdir):
+def patchedGener(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir):
     
     if isNormalCondition(diff_file, soft_folder, vunl_file):
         return parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir)
     else:
         diff_contents = getDiffContents(diff_file, vunl_file)
         patched_file = patchedFileBuild(cve_id, vunl_func, outdir)
-        writePatchedFile(cve_id, vunl_func, patched_file, vunl_func_src, diff_contents)
-        return patched_file
+        ret = writePatchedFile(cve_id, vunl_func, vunl_file, patched_file, diff_contents)
+        if ret < 0:
+            return "NO_MODIFICATION"
+        else:
+            return patched_file
         
         
 # 获得补丁内容
@@ -54,15 +57,17 @@ def patchedFileBuild(cve_id, funcName, outdir):
     return os.path.join(outdir, base_name + "_patched_".upper() + funcName + '.c')
 
 # 打补丁操作
-def writePatchedFile(cveid, func_name, patched_file, vunl_func_src, diff_contents):
+def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
     diff_sum = len(diff_contents)
     real_diff_contents = []
     # 删除空白行
     for line_num in range(diff_sum):
         if diff_contents[line_num]:
             real_diff_contents.append(diff_contents[line_num])
-            
-    source_code_contents = open(vunl_func_src, 'r').readlines()
+    
+    contents = open(vuln_file, 'r').readlines()
+    func_start, func_end = getFuncFromSrc(contents, func_name)       
+    source_code_contents = contents[func_start : func_end+1]
     source_code_sum = len(source_code_contents)
     source_code_num = 0
     diff_num = 0
@@ -94,12 +99,17 @@ def writePatchedFile(cveid, func_name, patched_file, vunl_func_src, diff_content
             source_code_num += 1
     file = open(patched_file, 'w')
     
-    old = cveid.replace("-", "_").upper() + "_VULN_" + func_name
+    #检查是否进行了修改
+    if tar_contents == source_code_contents:
+        return -1
+    
+    old = func_name
     new = cveid.replace("-", "_").upper() + "_PATCHED_" + func_name
     replace_funcName(old, new, tar_contents)
     
     file.writelines(tar_contents)
     file.close()
+    return 0
     
 def getDiffContentStart(diff_contents, vunl_file):
     lines = []
@@ -223,6 +233,12 @@ def parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, o
         for i in range(current_line, func_end + 1):
             write_contents.append(src_contents[i])
     
+    #检查是否进行了修改
+    org_func_contents = src_contents[func_start : func_end+1]
+    if org_func_contents == write_contents:
+        #未修改，可能是diff文件不对，后者代码bug
+        return "NO_MODIFICATION"
+        
     patch_file = open(os.path.join(outdir, new_func_name + ".c"), "w")
     patch_file.writelines(replace_funcName(vunl_func, new_func_name, write_contents))
     patch_file.close()
