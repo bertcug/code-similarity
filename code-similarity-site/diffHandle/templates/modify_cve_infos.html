@@ -1,0 +1,65 @@
+{% extends "../../mysite/templates/base.html" %}
+
+{% block title %}
+<title>CVE信息修改</title>
+{% endblock %}
+
+{% block addon %}
+{% load staticfiles %}
+{% load bootstrap3 %}
+<script src="{% static 'js/toolkit.js' %}"></script>
+{% endblock %}
+
+
+
+{% block content_body %}
+<div class="row col-lg-8 col-lg-offset-2">
+<div class="panel panel-info">
+		<div class="panel-heading text-center">{% bootstrap_icon "info-sign" %} 基本信息</div>
+		<div class="panel-body">
+			<form method="post">
+			{% csrf_token %}
+			<div class="form-group">
+				<label class="control-label" for="cve">CVE编号：</label>
+				<label class="form-control" id="cve">{{ cve_info.cveid }}</label>
+			</div>
+			
+			<div class="form-group">
+				<label class="control-label" for="cwe">CWE: 
+					<span>
+						<a onclick="undisable(cwe)">{% bootstrap_icon "edit" %}</a>
+					</span>
+				</label>
+				<input id="cwe" class="form-control" type="text" name="cweid" 
+						disabled="true" value="{{ cve_info.cweid }}">
+			</div>
+			
+			<div class="form-group">
+				<label class="control-label" for="sel_soft">漏洞软件：
+					<span>
+						<a onclick="undisable(sel_soft)">{% bootstrap_icon "edit" %}</a>
+					</span>
+				</label>
+				<select class="form-control" id="sel_soft" name="vuln_soft_id" disabled="true">
+					{% for soft in softs %}
+					<option {% if soft == cve_info.vuln_soft %}selected="selected"{% endif %}
+						value="{{ soft.software_id }}">{{ soft }}</option>
+					{% endfor %}
+				</select>
+			</div>
+			
+			<div class="form-group">
+				<label>补丁文件：</label>
+				<a href="/diffTest/view_diff_file/{{ cve_info.info_id }}"><span>{% bootstrap_icon "search" %}</span>查看</a>
+				<a href="/diffTest/modify_diff/{{ cve_info.info_id }}"><span>{% bootstrap_icon "upload" %}</span>重新上传</a>
+			</div>
+			
+			<input id="btn" type="submit" value="保存" class="btn btn-success btn-block" disabled="disabled"
+				onclick="return onSubmit()"> 
+			</form>
+			
+		</div>
+</div>
+</div>
+
+{% endblock %}

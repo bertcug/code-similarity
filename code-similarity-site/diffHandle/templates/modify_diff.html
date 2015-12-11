@@ -1,0 +1,25 @@
+{% extends "../../mysite/templates/base.html" %}
+
+{% block title %}
+<title>补丁文件修改</title>
+{% endblock %}
+
+{% load bootstrap3 %}
+
+{% block content_body %}
+<div class="row col-lg-4 col-lg-offset-4">
+	<div class="panel panel-info">
+		<div class="text-center panel-heading">{{ cve_info.cveid }}</div>
+	
+	
+		<div class="panel-body">
+			<form method="post">
+			{% csrf_token %}
+			{% 	bootstrap_form form %} 
+			<input type="submit" class="btn btn-success btn-block" value="上传">
+			</form>
+		</div>
+	</div>
+</div>
+{% if upload_ok %}<script>alert("上传成功")</script> {% endif %}
+{% endblock %}

@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import time
+import re
 from util.VunlsGener import getFuncFromSrc
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -16,10 +17,12 @@ from diffHandle.util.db_funcs import all_in_db, del_all
 from threading import Thread
 from software_manager.util.database_proc import is_db_on
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.forms.models import ModelChoiceField
 
 # Create your views here.
 class diff_import(forms.Form):
     cveid = forms.CharField(max_length = 20, label = "CVE编号")
+    cweid = forms.CharField(max_length = 10, label="CWE编号")
     vuln_soft = forms.ModelChoiceField(queryset=softwares.objects.all(), empty_label=None, label="漏洞软件")
     diff_file = forms.FileField(label="补丁文件")
     
@@ -53,7 +56,7 @@ def import_diff(request):
             
             #test whether the infomation has been uploaded
             try:
-                obj = cve_infos.objects.get(cveid = diff.cleaned_data['cveid'].lower(),
+                obj = cve_infos.objects.get(cveid = diff.cleaned_data['cveid'].lower().strip(),
                                             vuln_soft = soft,
                                             diff_file__endswith = file_md5)
                 #the infomation exists, remove the uploaded diff file and tell user
@@ -66,7 +69,8 @@ def import_diff(request):
                 new_name = os.path.join(tmp_path, file_md5)
                 os.rename(file_path, new_name)
                 
-                obj = cve_infos(cveid = diff.cleaned_data['cveid'].lower(),
+                obj = cve_infos(cveid = diff.cleaned_data['cveid'].lower().strip(),
+                                cweid = diff.cleaned_data['cweid'].lower().strip(),
                                     vuln_soft = soft,
                                     diff_file = new_name,
                                     user = request.user)
@@ -257,4 +261,96 @@ def read_patch_func(request, vuln_id):
     lines = _file.readlines()
     _file.close()
     return render_to_response("view_code.html", RequestContext(request, {'lines':lines}))    
+
+@login_required
+def modify_cve_infos(request, info_id):
+    if request.method == "GET":
+        cve_info = cve_infos.objects.get(info_id=info_id)
+        softs = softwares.objects.all()
+        
+        return render_to_response("modify_cve_infos.html", 
+                                  RequestContext(request, {'cve_info':cve_info, 'softs':softs}))
+    else:
+        cve_info = cve_infos.objects.get(info_id=info_id)
+        cweid = request.POST.get("cweid")
+        soft_id = request.POST.get("vuln_soft_id")
+        
+        if cve_info.cweid == cweid and cve_info.vuln_soft.software_id == soft_id:
+            return HttpResponse("无任何修改")
+        else:
+            cve_info.cweid = cweid
+            soft = softwares.objects.get(software_id=soft_id)
+            cve_info.vuln_soft = soft
+            cve_info.save()
             
+            return HttpResponse("修改成功")
+        
+        
+@login_required
+def view_diff_file(request, info_id):
+    diff = cve_infos.objects.get(info_id=info_id).diff_file
+    lines = open(diff, "r").readlines()
+    return render_to_response("view_code.html", RequestContext(request, {'lines':lines}))
+
+class upload_diff_form(forms.Form):
+    diff_file = forms.FileField(label="补丁文件")
+    
+@login_required
+def modify_diff(request, info_id):
+    if request.method == "GET":
+        cve_info = cve_infos.objects.get(info_id=info_id)
+        form = upload_diff_form()
+        return render_to_response("modify_diff.html", 
+                                  RequestContext(request, {'cve_info':cve_info, 'form':form}))
+    else:
+        cve_info = cve_infos.objects.get(info_id=info_id)
+        form = upload_diff_form(request.POST, request.FILES)
+        if form.is_valid():
+            
+            tmp = os.path.join(settings.DIFF_FILE_PATH, cve_info.cveid, time.time().__str__())
+            file_md5 = handle_upload_diff_file(request.FILES['diff_file'], tmp)
+            diff_file = os.path.join(settings.DIFF_FILE_PATH, cve_info.cveid, file_md5)
+            os.rename(tmp, diff_file)
+            cve_info.diff_file = diff_file
+            cve_info.save()
+            
+            return render_to_response("modify_diff.html", 
+                        RequestContext(request,{'cve_info':cve_info, 'form':form, 'upload_ok':True}))
+        else:
+            return render_to_response("modify_diff.html", 
+                                  RequestContext(request, {'cve_info':cve_info, 'form':form}))
+
+def modify_vuln_info(request, vuln_id):
+    vuln_info = vulnerability_info.objects.get(vuln_id=vuln_id)
+    soft_folder = vuln_info.cve_info.vuln_soft.sourcecodepath
+    
+    if request.method == "GET":
+        vuln_info.vuln_file = vuln_info.vuln_file[len(soft_folder):]
+        return render_to_response("modify_vuln_infos.html", 
+                                  RequestContext(request,{'vuln_info':vuln_info}))
+    else:
+        vuln_file = request.POST.get("vuln_file")
+        vuln_func = request.POST.get("vuln_func")
+        if os.path.isfile(os.path.join(soft_folder, vuln_file)):
+            vuln_file = os.path.join(soft_folder, vuln_file)
+        else:
+            files = get_vuln_file(os.path.basename(vuln_file), soft_folder)
+            if len(files) == 1:
+                vuln_file = files[0]
+            else:
+                return HttpResponse("输入信息不正确")
+        
+        lines = open(vuln_file, "r").readlines()
+        start, end = getFuncFromSrc(lines, vuln_func)
+        if start < 0:
+            return HttpResponse("找不到该函数")
+        else:
+            vuln_type=request.POST.get("vuln_type")
+            vuln_info.vuln_file = vuln_file
+            vuln_info.vuln_func = vuln_func
+            vuln_info.vuln_type = vuln_type
+            vuln_info.save()
+            return HttpResponse("修改成功")
+        
+    
+    

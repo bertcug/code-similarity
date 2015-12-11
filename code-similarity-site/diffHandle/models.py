@@ -8,6 +8,7 @@ import os
 class cve_infos(models.Model):
     info_id = models.AutoField(primary_key = True)
     cveid = models.CharField( max_length = 20)
+    cweid = models.CharField( max_length = 10, default="unknown")
     vuln_soft = models.ForeignKey(softwares)
     diff_file = models.CharField( max_length = 200, null = True)
     user = models.ForeignKey( auth.models.User, null = True)
