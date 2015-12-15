@@ -12,7 +12,7 @@
 			<div class="panel-title text-center"> <font face="楷体" size="5">漏洞信息导入</font></div>
 		</div>
 		<div class="panel-body">
-			<form method="post" enctype="multipart/form-data">{% csrf_token %}
+			<form method="post">{% csrf_token %}
 				{% bootstrap_form vuln_info %}
 				<input class="btn btn-block btn-success" type="submit" value="导入">
 			</form>
