@@ -9,6 +9,6 @@ function undisable(id){
 
 function onSubmit(){
 	$("[disabled='true']").attr("disabled", false);
-	$("#btn").attr("disabled", true)
+	$("#btn").attr("disabled", true);
 	return true;
 }
