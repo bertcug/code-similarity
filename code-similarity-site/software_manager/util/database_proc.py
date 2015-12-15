@@ -23,8 +23,8 @@ def database_creat_thread(soft_id):
         neo4j_location = os.path.join(settings.NEO4J_DATABASE_PATH,soft.__str__())
         
         cmd_str = "java -jar " + settings.JOERN_PATH + " "\
-         + source_location + " -outdir " + neo4j_location + " > "\
-          + os.path.join(neo4j_location, "create_logs")
+         + source_location + " -outdir " + neo4j_location + " >& "\
+          + os.path.join(settings.TMP_PATH, soft.__str__() + "-create_logs")
     
         soft.neo4j_db = "pending"
         soft.save()
