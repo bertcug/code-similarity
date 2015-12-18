@@ -144,7 +144,7 @@ def import_vuln_info(request):
             if vuln_info.cleaned_data['vuln_func'].strip() == "None":
                 try:
                     obj = vulnerability_info.objects.get(cve_info=cve_info, 
-                                                         vuln_file=vuln_info.cleaned_data['vuln_file'])
+                                                         vuln_file=vuln_file)
                     return render_to_response("import_vuln.html",
                                             RequestContext(request,{'vuln_info':vuln_info,
                                                                     'already':True}))
@@ -153,6 +153,8 @@ def import_vuln_info(request):
                                               vuln_file = vuln_file,
                                               vuln_type = vuln_info.cleaned_data['vuln_type'].strip(),
                                               user = request.user)
+                    info.save()
+                    return HttpResponse(u"录入成功，感谢" + request.user.username + u"对本平台的贡献" )
             try:
                 obj = vulnerability_info.objects.get(cve_info=cve_info,
                                                     vuln_func = vuln_info.cleaned_data['vuln_func'].strip())

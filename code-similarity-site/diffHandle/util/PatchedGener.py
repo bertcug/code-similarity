@@ -112,6 +112,7 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
     return 0
     
 def getDiffContentStart(diff_contents, vunl_file):
+    # return @@ line number
     lines = []
     line_sum = len(diff_contents)
     reg = r"\+{3}(.*)%s" % os.path.basename(vunl_file)
@@ -172,7 +173,7 @@ def getDiffEnd(diff_contents):
         else:
             continue
     
-    return diff_bottom
+    return min(diff_bottom, diff_sum)
         
 # 处理补丁文件和源文件匹配的情况
 def parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir):
@@ -194,7 +195,10 @@ def parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, o
     for start in diff_starts:
         # start -> @@
         line = getLineNumFromStr(diff_contents[start])
-        while current_line < line - 1:
+        while current_line < line - 1 and current_line <= func_end:
+            if current_line < func_start:
+                continue
+            
             write_contents.append(src_contents[current_line])
             current_line += 1
        # if current_line < line:
