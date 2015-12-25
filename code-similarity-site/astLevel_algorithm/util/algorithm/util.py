@@ -6,10 +6,12 @@ Created on Jul 27, 2015
 '''
 
 import time
+import re
 
 from SerializedAST import serializedAST
 from astLevel_algorithm.models import func_similarity_reports
 from diffHandle.models import vulnerability_info
+from suffixtree import suffixtree
 
 
 try:
@@ -210,5 +212,43 @@ def vuln_patch_compare(vuln_id, neo4jdb):
     report.cost = round(end_time - start_time, 2)
     report.save()
     
-def astLevel_similarity_proc():
-    pass
+def astLevel_similarity_proc(db1, funcs, db2, func_name):
+    suffixtree_cmp = suffixtree()
+    
+    pattern1 = serializedAST(db2, True, True).genSerilizedAST(func_name)
+    pattern2 = serializedAST(db2, False, True).genSerilizedAST(func_name)  # 所有类型变量映射成相同值
+    pattern3 = serializedAST(db2, True, False).genSerilizedAST(func_name)
+    pattern4 = serializedAST(db2, False, False).genSerilizedAST(func_name)
+    
+    #去掉前缀
+    prefix_str = r"^FunctionDef\([0-9]+\);CompoundStatement\([0-9]+\);"
+    pattern1 = re.sub(prefix_str, "", pattern1)
+    pattern2 = re.sub(prefix_str, "", pattern2)
+    pattern3 = re.sub(prefix_str, "", pattern3)
+    pattern4 = re.sub(prefix_str, "", pattern4)
+    
+    s1 = serializedAST(db1, True, True)
+    s2 = serializedAST(db1, False, True)
+    s3 = serializedAST(db1, True, False)
+    s4 = serializedAST(db1, False, False)
+    
+    report_dict = {}
+    for func in funcs:
+        report = ast_match_info()
+        
+        if suffixtree_cmp.search(s1.genSerilizedAST(func), pattern1):
+            report.distinct_type_and_const = True
+        
+        if suffixtree_cmp.search(s2.genSerilizedAST(func), pattern2):
+            report.distinct_const_no_type = True
+        
+        if suffixtree_cmp.search(s3.genSerilizedAST(func), pattern3):
+            report.distinct_type_no_const = True
+        
+        if suffixtree_cmp.search(s4.genSerilizedAST(func), pattern4):
+            report.no_type_no_const = True
+            
+        if report.is_valid():
+            report_dict[func] = report
+            
+    return report_dict
