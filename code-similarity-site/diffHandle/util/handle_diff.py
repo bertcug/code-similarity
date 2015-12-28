@@ -10,13 +10,18 @@ from VunlsGener import vunlGener
 from PatchedGener import patchedGener
 
 def handle_diff_file(vuln):
+    if vuln.vuln_func == "None":
+        return
+    
     vuln_dir = os.path.join(settings.VULN_FUNC_PATH, vuln.cve_info.cveid)
     patch_dir = os.path.join(settings.PATCHED_FUNC_PATH, vuln.cve_info.cveid)
     if not os.path.isdir(vuln_dir):
         os.makedirs(vuln_dir)
     if not os.path.isdir(patch_dir):
         os.makedirs(patch_dir)
-            
+      
+    
+              
     vuln_func_src = vunlGener(vuln.cve_info.cveid,
                               vuln.cve_info.vuln_soft.sourcecodepath,
                               vuln.cve_info.diff_file,
