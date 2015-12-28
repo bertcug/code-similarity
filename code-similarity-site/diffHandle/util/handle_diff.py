@@ -11,7 +11,9 @@ from PatchedGener import patchedGener
 
 def handle_diff_file(vuln):
     if vuln.vuln_func == "None":
-        return
+        vuln.vuln_func_source = vuln.patched_func_source = "NO_FUNCTION_FOUND"
+        vuln.save()
+        return 
     
     vuln_dir = os.path.join(settings.VULN_FUNC_PATH, vuln.cve_info.cveid)
     patch_dir = os.path.join(settings.PATCHED_FUNC_PATH, vuln.cve_info.cveid)

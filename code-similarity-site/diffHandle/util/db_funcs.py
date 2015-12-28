@@ -24,6 +24,9 @@ def all_in_db():
             
         shutil.copyfile(info.vuln_func_source, os.path.join(settings.TMP_PATH, "db_files", 
                                                             os.path.basename(info.vuln_func_source)))
+        if info.patched_func_source == "NO_MODIFICATION":
+            continue
+        
         shutil.copyfile(info.patched_func_source, os.path.join(settings.TMP_PATH, "db_files",
                                                                os.path.basename(info.patched_func_source)))
         #info.is_in_db = True
@@ -33,7 +36,7 @@ def all_in_db():
     log = os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db","create_logs", time.time().__str__())
     cmd_str = "java -jar " + settings.JOERN_PATH + " "\
                 + os.path.join(settings.TMP_PATH, "db_files") + " -outdir "\
-                + os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db") + " > " + log
+                + os.path.join(settings.NEO4J_DATABASE_PATH, "vuln_db") + " >& " + log
     
     os.system(cmd_str)
     shutil.rmtree(os.path.join(settings.TMP_PATH, "db_files"))
@@ -45,7 +48,7 @@ def all_in_db():
     for info in infos:
         vuln = os.path.join(settings.TMP_PATH, "db_files", os.path.basename(info.vuln_func_source))
         patch = os.path.join(settings.TMP_PATH, "db_files", os.path.basename(info.patched_func_source))
-        if vuln in logs and patch in logs:
+        if vuln in logs and (patch in logs or info.patched_func_source == "NO_MODIFICATION"):
             info.is_in_db = True
             info.save()
     
