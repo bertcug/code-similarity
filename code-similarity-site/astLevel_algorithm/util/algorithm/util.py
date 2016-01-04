@@ -36,11 +36,12 @@ class ast_match_info():
                 "distinct_const_no_type":self.distinct_const_no_type,
                 "no_type_no_const":self.no_type_no_const}
         
-    def __init__(self, member_dict):
-        self.distinct_type_and_const = member_dict["distinct_type_and_const"]
-        self.distinct_type_no_const = member_dict["distinct_type_no_const"]
-        self.distinct_const_no_type = member_dict["distinct_const_no_type"]
-        self.no_type_no_const = member_dict["no_type_no_const"]    
+    def __init__(self, member_dict=None):
+        if member_dict:
+            self.distinct_type_and_const = member_dict["distinct_type_and_const"]
+            self.distinct_type_no_const = member_dict["distinct_type_no_const"]
+            self.distinct_const_no_type = member_dict["distinct_const_no_type"]
+            self.no_type_no_const = member_dict["no_type_no_const"]    
 
 def getFuncNode(funcName, neo4jdb):
     query = "getFunctionsByName('%s')" % funcName
@@ -207,11 +208,16 @@ def vuln_patch_compare(vuln_id, neo4jdb):
     
     end_time = time.time()
     
-    report.match_reports = pickle.dumps(r)
+    report.match_reports = pickle.dumps(r.get_dict())
     report.status = "success"
     report.cost = round(end_time - start_time, 2)
     report.save()
-    
+
+def vuln_patch_compare_all(neo4jdb):
+    objects = vulnerability_info.objects,all()
+    for obj in objects:
+        vuln_patch_compare(obj.vuln_id, neo4jdb)
+        
 def astLevel_similarity_proc(db1, funcs, db2, func_name):
     suffixtree_cmp = suffixtree()
     

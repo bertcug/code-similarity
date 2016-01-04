@@ -10,7 +10,7 @@ from django.template.context import RequestContext
 from joern.all import JoernSteps
 
 from astLevel_algorithm.models import func_similarity_reports
-from astLevel_algorithm.util.algorithm.util import vuln_patch_compare, \
+from astLevel_algorithm.util.algorithm.util import vuln_patch_compare_all, \
     ast_match_info
 from diffHandle.models import vulnerability_info
 from mysite import settings
@@ -89,9 +89,10 @@ def cal_funcs_similarity(request):
                     except:
                         return HttpResponse("连接特征数据库失败，请联系管理员查明原因!")
                     
-                    # th = Thread(target=vuln_patch_compare, args=(sel, neo4jdb))
-                    # th.start()
-                    # return HttpResponse("启动线程计算中，请稍后查看！")
+                    th = Thread(target=vuln_patch_compare_all, args=(neo4jdb))
+                    th.start()
+                    return HttpResponse("启动线程计算中，请稍后查看！")
+                    '''
                     vuln_patch_compare(sel, neo4jdb)
                     funcs = funcs_sel()
                     rs = func_similarity_reports.objects.all()
@@ -101,6 +102,7 @@ def cal_funcs_similarity(request):
             
                     return render_to_response("ast_function_level.html",
                                   RequestContext(request, {'funcs':funcs, 'reports':reports}))
+                    '''
                 else:
                     return HttpResponse("特征数据库未启动，请先启动特征数据库")
             else:

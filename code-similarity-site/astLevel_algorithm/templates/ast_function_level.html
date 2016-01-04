@@ -5,11 +5,10 @@
 {% block content_body %}
 	<h2 align="center">AST函数级比较</h2>
 	<h3 align="center">漏洞函数/补丁后函数比较</h3>
-	<div align="center" width=80%>
+	<div align="center" width=80%> 
 		<form method="post" align="center">
 			{% csrf_token %} 
-			{{ funcs.as_table }} 
-			<input type="submit" value="计算">
+			<input type="submit" value="计算all">
 		</form>
 	</div>
 	<br><div style="border-bottom:1px dashed;width=80%"></div><br>
