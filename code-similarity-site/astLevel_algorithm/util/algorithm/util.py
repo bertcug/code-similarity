@@ -214,7 +214,7 @@ def vuln_patch_compare(vuln_id, neo4jdb):
     report.save()
 
 def vuln_patch_compare_all(neo4jdb):
-    objects = vulnerability_info.objects,all()
+    objects = vulnerability_info.objects.all()
     for obj in objects:
         vuln_patch_compare(obj.vuln_id, neo4jdb)
         
