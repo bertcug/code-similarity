@@ -82,7 +82,7 @@ def cal_funcs_similarity(request):
                 except:
                     return HttpResponse("连接特征数据库失败，请联系管理员查明原因!")
                     
-                th = Thread(target=vuln_patch_compare_all, args=(neo4jdb))
+                th = Thread(target=vuln_patch_compare_all, args=(neo4jdb,))
                 th.start()
                 return HttpResponse("启动线程计算中，请稍后查看！")
             else:
