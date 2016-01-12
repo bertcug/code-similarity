@@ -69,32 +69,47 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
     func_start, func_end = getFuncFromSrc(contents, func_name)       
     source_code_contents = contents[func_start : func_end+1]
     source_code_sum = len(source_code_contents)
+    #两个num相当于两个指针，分别指向执行的行号
     source_code_num = 0
     diff_num = 0
+    
+    #修改后的函数代码
     tar_contents = []
-    while source_code_num < source_code_sum:
-        if diff_num < diff_sum:
-            if real_diff_contents[diff_num][0] == '-':
+    
+    while source_code_num < source_code_sum:                    #确保不超出函数的范围
+        
+        if diff_num < diff_sum:                                 #检查是补丁是否未全部打完
+            if real_diff_contents[diff_num][0] == ' ':
+                #如果diff文件以空格开头，应该是未修改的内容
                 if real_diff_contents[diff_num][1:].strip() in source_code_contents[source_code_num]:
+                    #如果该未修改的内容和当前处理的源码行一致，那么将其添加进打过补丁的函数内容中，处理的行号+1
+                    tar_contents.append(source_code_contents[source_code_num])
                     diff_num += 1
                     source_code_num += 1
                 else:
+                    #如果该行内容与当前处理的行内容不一致，说明还未处理到这一行，将当前未修改行将阿如打补丁后的源码中
+                    tar_contents.append(source_code_contents[source_code_num])
+                    source_code_num += 1                        
+            elif real_diff_contents[diff_num][0] == '-':                   #如果遇到的补丁行以-号开头
+                if real_diff_contents[diff_num][1:].strip() in source_code_contents[source_code_num]:
+                    #去除-号之后内容 与 函数当前行的内容一致，那么就是找到了源码中的对应行
+                    #由于是删除操作，所以处理的行号加1，不将该行写入打补丁后的程序源码中
+                    diff_num += 1
+                    source_code_num += 1
+                else:
+                    #去除-号后与源码中处理的当前行不一致，那么说明还未到需要修改的地方
+                    #也就是说当前的代码是未修改的，所以将其直接加入
                     tar_contents.append(source_code_contents[source_code_num])
                     source_code_num += 1
             elif real_diff_contents[diff_num][0] == '+':
+                #如果diff行以+开头，说明是对源代码的添加，直接写入打补丁后的函数中，diff处理行号+1
                 tar_contents.append(real_diff_contents[diff_num][1:])
                 diff_num += 1
-            elif real_diff_contents[diff_num][0] == ' ':
-                if real_diff_contents[diff_num][1:].strip() in source_code_contents[source_code_num]:
-                    tar_contents.append(source_code_contents[source_code_num])
-                    diff_num += 1
-                    source_code_num += 1
-                else:
-                    tar_contents.append(source_code_contents[source_code_num])
-                    source_code_num += 1
+            
             else:
                 diff_num += 1
         else:
+            #补丁已经打完，剩下的内容都未修改，直接加入大国补丁后的源码中
             tar_contents.append(source_code_contents[source_code_num])
             source_code_num += 1
     file = open(patched_file, 'w')
