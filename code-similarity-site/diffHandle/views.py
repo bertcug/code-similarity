@@ -143,7 +143,8 @@ def import_vuln_info(request):
             #允许函数名字段为空,填写的为None
             if vuln_info.cleaned_data['vuln_func'].strip() == "None":
                 try:
-                    obj = vulnerability_info.objects.get(cve_info=cve_info, 
+                    obj = vulnerability_info.objects.get(cve_info=cve_info,
+                                                         vuln_func="None",
                                                          vuln_file=vuln_file)
                     return render_to_response("import_vuln.html",
                                             RequestContext(request,{'vuln_info':vuln_info,
