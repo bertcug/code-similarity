@@ -14,7 +14,7 @@ class cve_infos(models.Model):
     user = models.ForeignKey( auth.models.User, null = True)
     
     def __str__(self):
-        return self.cveid
+        return self.cveid + "[" + self.vuln_soft.__str__() + "]"
     class Meta:
         db_table = "cve_infos"
         ordering = ["cveid"]
