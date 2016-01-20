@@ -156,18 +156,18 @@ class SourceLoader(object):
             num_ngram_processed += 1
 
         for patch_id in range(0, self._npatch):
-            if magic_ext == self._patch_list[patch_id].file_ext:
-                hash_list = self._patch_list[patch_id].hash_list
-                is_match = True
-                for h in hash_list:
-                    if not self._bit_vector[h]:
-                        is_match = False
-                        break
-                if is_match:
-                    is_vuln_source = True
-                    self._match_dict[patch_id].append(self._nsource)
-                    common.verbose_print('      - match (patch #%d : source #%d)' % (patch_id, self._nsource))
-                    self._nmatch += 1
+            #if magic_ext == self._patch_list[patch_id].file_ext:
+            hash_list = self._patch_list[patch_id].hash_list
+            is_match = True
+            for h in hash_list:
+                if not self._bit_vector[h]:
+                    is_match = False
+                    break
+            if is_match:
+                is_vuln_source = True
+                self._match_dict[patch_id].append(self._nsource)
+                common.verbose_print('      - match (patch #%d : source #%d)' % (patch_id, self._nsource))
+                self._nmatch += 1
 
         return is_vuln_source
 
