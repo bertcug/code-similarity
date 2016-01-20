@@ -137,7 +137,7 @@ class SourceLoader(object):
                     for h in hash_list:
                         if not self._bit_vector[h]:
                             is_match = False
-                               break
+                                break
                     if is_match:
                         is_vuln_source = True
                         self._match_dict[patch_id].append(self._nsource)
