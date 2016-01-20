@@ -131,18 +131,18 @@ class SourceLoader(object):
             if num_ngram_processed > common.bloomfilter_size/common.min_mn_ratio:
                 common.verbose_print('      - split Bloom filters (%d n-grams)' % num_ngram_processed)
                 for patch_id in range(0, self._npatch):
-                    if magic_ext == self._patch_list[patch_id].file_ext:
-                        hash_list = self._patch_list[patch_id].hash_list
-                        is_match = True
-                        for h in hash_list:
-                            if not self._bit_vector[h]:
-                                is_match = False
-                                break
-                        if is_match:
-                            is_vuln_source = True
-                            self._match_dict[patch_id].append(self._nsource)
-                            common.verbose_print('      - match (patch #%d : source #%d)' % (patch_id, self._nsource))
-                            self._nmatch += 1
+                    #if magic_ext == self._patch_list[patch_id].file_ext:
+                    hash_list = self._patch_list[patch_id].hash_list
+                    is_match = True
+                    for h in hash_list:
+                        if not self._bit_vector[h]:
+                            is_match = False
+                               break
+                    if is_match:
+                        is_vuln_source = True
+                        self._match_dict[patch_id].append(self._nsource)
+                        common.verbose_print('      - match (patch #%d : source #%d)' % (patch_id, self._nsource))
+                        self._nmatch += 1
                 num_ngram_processed = 0
                 self._bit_vector.setall(0)
 
