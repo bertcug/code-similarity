@@ -152,6 +152,7 @@ def import_vuln_info(request):
                 except vulnerability_info.DoesNotExist:
                     info = vulnerability_info(cve_info = cve_info,
                                               vuln_file = vuln_file,
+                                              vuln_func = "None",
                                               vuln_type = vuln_info.cleaned_data['vuln_type'].strip(),
                                               user = request.user)
                     info.save()
