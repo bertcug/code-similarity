@@ -317,7 +317,7 @@ def modify_diff(request, info_id):
             cve_info.save()
             
             return HttpResponse(u"修改成功")
-        except Exception:
+        except Exception as e:
             f = upload_diff_form()
             return render_to_response("modify_diff.html", 
                                   RequestContext(request, {'cve_info':cve_info, 'form':f}))
