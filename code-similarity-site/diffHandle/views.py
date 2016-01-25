@@ -308,9 +308,7 @@ def modify_diff(request, info_id):
                                   RequestContext(request, {'cve_info':cve_info, 'form':form}))
     else:
         cve_info = cve_infos.objects.get(info_id=info_id)
-        form = upload_diff_form(request.POST, request.FILES)
-        if form.is_valid():
-            
+        try:
             tmp = os.path.join(settings.DIFF_FILE_PATH, cve_info.cveid, time.time().__str__())
             file_md5 = handle_upload_diff_file(request.FILES['diff_file'], tmp)
             diff_file = os.path.join(settings.DIFF_FILE_PATH, cve_info.cveid, file_md5)
@@ -319,7 +317,7 @@ def modify_diff(request, info_id):
             cve_info.save()
             
             return HttpResponse(u"修改成功")
-        else:
+        catch except:
             f = upload_diff_form()
             return render_to_response("modify_diff.html", 
                                   RequestContext(request, {'cve_info':cve_info, 'form':f}))
