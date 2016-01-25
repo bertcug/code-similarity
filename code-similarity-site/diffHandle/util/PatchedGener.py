@@ -5,22 +5,25 @@ import string
 
 from VunlsGener import getFuncFromSrc
 from VunlsGener import replace_funcName
+from _mysql import NULL
 
 
 def patchedGener(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir):
     
-    if isNormalCondition(diff_file, soft_folder, vunl_file):
-        return parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir)
-    else:
+    #if isNormalCondition(diff_file, soft_folder, vunl_file):
+        #return parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir)
+    #else:
         #diff_contents = getDiffContents(diff_file, vunl_file)
         #diff_contents = open(diff_file, "r").readlines()
         real_diff_contents = getRealDiffContents(diff_file, vunl_file)
-        patched_file = patchedFileBuild(cve_id, vunl_func, outdir)
-        ret = writePatchedFile(cve_id, vunl_func, vunl_file, patched_file, real_diff_contents)
-        if ret < 0:
+        patched_file_dir = patchedFileBuild(cve_id, vunl_func, outdir)
+        ret = writePatchedFile(cve_id, vunl_func, vunl_file, patched_file_dir, real_diff_contents)
+        if ret == -1:
             return "NO_MODIFICATION"
+        elif ret == -2:
+            return "NO_MATCH"
         else:
-            return patched_file
+            return patched_file_dir
         
         
 # 获得real补丁内容
@@ -36,7 +39,7 @@ def getRealDiffContents(diff_file, vunl_file):
             break
                
     for line_num in range(start_pos, line_sum):
-        if diff_contents[line_num][0:2] == '@@':
+        if diff_contents[line_num].strip()[0:2] == '@@':
             start_pos = line_num
             break
     '''   
@@ -48,8 +51,9 @@ def getRealDiffContents(diff_file, vunl_file):
     for line_num in range(start_pos,line_sum):
         if diff_contents[line_num].startswith(('diff','index','---')):
             end_pos = line_num
-            break            
-    #end_pos = line_sum
+            break
+        else:
+            end_pos = line_sum
     '''
     for line_num in range(start_pos, line_sum):
         if diff_contents[line_num][0:3] == '---' or diff_contents[line_num][0:3] == '+++':
@@ -68,7 +72,7 @@ def patchedFileBuild(cve_id, funcName, outdir):
     return os.path.join(outdir, base_name + "_patched_".upper() + funcName + '.c')
 
 # 打补丁操作
-def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
+def writePatchedFile(cveid, func_name, vuln_file, patched_file_dir, diff_contents):
     diff_ends = []
     tar_lines = []    
     diff_starts = getDiffContentStart(diff_contents, vuln_file)
@@ -76,39 +80,38 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
     seg_num = len(diff_starts)
     
     if seg_num == 1:
-        diff_ends.append(diff_lens)
+        diff_ends.append(diff_lens-1)
     else:
         for i in range(seg_num-1):
             diff_ends.append(diff_starts[i+1] - 1)
-        diff_ends.append(diff_lens)
+        diff_ends.append(diff_lens-1)
     
     vuln_file_contents = open(vuln_file, 'r').readlines()
     func_start, func_end = getFuncFromSrc(vuln_file_contents, func_name)       
     vuln_func_contents = vuln_file_contents[func_start : func_end+1]
     vuln_file_sum = len(vuln_file_contents)
-    #两个num相当于两个指针，分别指向执行的行号
-    vuln_file_num = 0
+    vuln_file_num = 0     #num相当于指针，指向vuln_file的行号
     
     #修改后的函数代码
-    patched_func = []
     patched_file = []
         
     for index in range(seg_num):
         part_source = []
-        for line in diff_contents[diff_starts[index]+1:diff_ends[index]]:
+        diff_line_num = 1
+        for line in diff_contents[diff_starts[index]+1:diff_ends[index]+1]:
             if line.strip().startswith('-'):
                 part_source.append(line)
             elif line.strip().startswith('+'):
                 continue
             else:
                 part_source.append(line)
-        for i in range(vuln_file_sum):
+        for i in range(vuln_file_num,vuln_file_sum-len(part_source)):
             if part_source[0].strip() in vuln_file_contents[i]:
                 sig = 1
                 for p in range(len(part_source)):
                     if not part_source[p].lstrip('-').strip() in vuln_file_contents[i+p]:
                         sig = 0
-                        continue
+                        break
                 if sig == 1:
                     tar_lines.append(i)
                     break
@@ -116,55 +119,44 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file, diff_contents):
                     continue
             else:
                 continue
-        #for diff_line in  diff_contents
-        
-    '''    
-    for start in diff_starts:
-        diff_line_num = start + 1
-        while diff_line_num < diff_lens:                                 #检查是补丁是否未全部打完
-            if diff_contents[diff_line_num][0] == ' ':
-                #如果diff文件以空格开头，应该是未修改的内容
-                if diff_contents[diff_line_num][1:].strip() in vuln_func_contents[vuln_file_num]:
-                    #如果该未修改的内容和当前处理的源码行一致，那么将其添加进打过补丁的函数内容中，处理的行号+1
-                    patched_func.append(vuln_func_contents[vuln_file_num])
-                    diff_line_num += 1
-                    vuln_file_num += 1
-                else:
-                    #如果该行内容与当前处理的行内容不一致，说明还未处理到这一行，将当前未修改行将阿如打补丁后的源码中
-                    patched_func.append(vuln_func_contents[vuln_file_num])
-                    vuln_file_num += 1                        
-            elif diff_contents[diff_line_num][0] == '-':                   #如果遇到的补丁行以-号开头
-                if diff_contents[diff_line_num][1:].strip() in vuln_func_contents[vuln_file_num]:
-                    #去除-号之后内容 与 函数当前行的内容一致，那么就是找到了源码中的对应行
+        if len(tar_lines) != index+1:
+            return -2
+        while diff_line_num < diff_ends[index]-diff_starts[index]+1:
+            if vuln_file_num < tar_lines[index]:
+                #如果target行号与当前处理的行不一致，说明还未处理到这一行，将当前未修改行写入打补丁后的源码中
+                patched_file.append(vuln_file_contents[vuln_file_num])
+                vuln_file_num += 1
+            else:
+                #target行号和当前处理的源码行一致,找到了源码中的对应行
+                if diff_contents[diff_starts[index]+diff_line_num][0] == '-':
                     #由于是删除操作，所以处理的行号加1，不将该行写入打补丁后的程序源码中
                     diff_line_num += 1
                     vuln_file_num += 1
+                elif diff_contents[diff_starts[index]+diff_line_num][0] == '+':
+                    #如果diff行以+开头，说明是对源代码的添加，直接写入打补丁后的函数中，diff处理行号+1
+                    patched_file.append(diff_contents[diff_starts[index]+diff_line_num][1:])
+                    diff_line_num += 1
                 else:
-                    #去除-号后与源码中处理的当前行不一致，那么说明还未到需要修改的地方
-                    #也就是说当前的代码是未修改的，所以将其直接加入
-                    patched_func.append(vuln_func_contents[vuln_file_num])
+                    #未修改的内容
+                    patched_file.append(vuln_file_contents[vuln_file_num])
+                    diff_line_num += 1
                     vuln_file_num += 1
-            elif diff_contents[diff_line_num][0] == '+':
-                #如果diff行以+开头，说明是对源代码的添加，直接写入打补丁后的函数中，diff处理行号+1
-                patched_func.append(diff_contents[diff_line_num][1:])
-                diff_line_num += 1
-            
-            elif isPatchEnd(diff_contents[diff_line_num]):
-                break
-    '''
-    if func_start + vuln_file_num < func_end + 1:
-        #补丁已经打完，剩下的内容都未修改，直接加入补丁后的源码中
-        patched_func.append(vuln_func_contents[func_start+vuln_file_num:func_end + 1])
+
+    #补丁已经打完，剩下的内容都未修改，直接加入补丁后的源码中
+    for i in range(vuln_file_num+1,vuln_file_sum):
+        patched_file.append(vuln_file_contents[i])
+
+    start_pos, end_pos = getFuncFromSrc(patched_file, func_name)
+    patched_func = patched_file[start_pos:end_pos + 1]
     
-    patched_func = getFuncFromSrc(patched_file, func_name)
     #检查是否进行了修改
     if patched_func == vuln_func_contents:
         return -1
     
-    file = open(patched_file, 'w')
+    file = open(patched_file_dir, 'w')
     old = func_name
     new = cveid.replace("-", "_").upper() + "_PATCHED_" + func_name
-    replace_funcName(old, new, patched_func)
+    replace_funcName(old, new, patched_file_dir)
     
     file.writelines(patched_func)
     file.close()
@@ -183,7 +175,7 @@ def getDiffContentStart(diff_contents, vunl_file):
             break
         
     for i in range(start, line_sum):
-        if diff_contents[i][0:2] == '@@':
+        if diff_contents[i].strip()[0:2] == '@@':
             startlines.append(i)
         elif re.match(r"^(\+|\-)", diff_contents[i]):
             continue
@@ -260,12 +252,7 @@ def parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, o
             
             write_contents.append(src_contents[current_line])
             current_line += 1
-       # if current_line < line:
-        #    for i in range(current_line, line - 1):
-                
-          #      current_line = line - 1
-                # patch_file.writelines(src_contents[current_line:line])
-                     
+            
         for i in range(diff_bottom - start - 1):
             # 删减行
             if diff_contents[start + i + 1][0] == "-":

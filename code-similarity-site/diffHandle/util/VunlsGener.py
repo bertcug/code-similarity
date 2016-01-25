@@ -1,6 +1,7 @@
 # coding=utf-8
 import os
 import re
+from _cffi_backend import typeof
 
 
 # 生成漏洞函数文件    
@@ -38,8 +39,9 @@ def getFuncFromSrc(line_contents, func_name):
         contents += line
     
     #在整个文件中正则搜索函数体位置,可以绕过函数的声明
-    #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,]*\)\s*\{' % func_name
-    pattern = r'^[\w\s]+[\s\*]+%s\s*\([\s\S]*?\)\s*\{' % func_name
+    #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]&]*\)\s*\{' % func_name
+    #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\s\S]*?\)\s*\{' % func_name
+    pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]\/&\(\)]*\)\s*\{' % func_name
     r_pattern = re.compile(pattern, re.MULTILINE)
     ret = r_pattern.search(contents)
     
@@ -79,7 +81,7 @@ def writeSourceFunc(source_code_file, func_name, vunl_func_file):
     if not os.path.isfile(source_code_file):#上传漏洞信息时出错
         return -2
     
-    start_pos = end_pos = 0
+    #start_pos = end_pos = 0
     new_func_name = os.path.basename(vunl_func_file)[:-2]
     line_contents = open(source_code_file).readlines()
     

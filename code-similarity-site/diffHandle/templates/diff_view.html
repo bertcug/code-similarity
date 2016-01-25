@@ -82,6 +82,8 @@ function add_id(vuln_id){
 					
 					{% if info.patched_func_source == "NO_MODIFICATION" %}
 					<td align="center">无修改</td>
+					{% elif info.patched_func_source == "NO_MATCH" %}
+					<td align="center">no match</td>
 					{% else %}
 					<td align="center">
 						<a href="/diffTest/view_patch_func/{{ info.vuln_id }}/">无该漏洞函数</a>
