@@ -143,7 +143,7 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file_dir, diff_content
                     vuln_file_num += 1
 
     #补丁已经打完，剩下的内容都未修改，直接加入补丁后的源码中
-    for i in range(vuln_file_num+1,vuln_file_sum):
+    for i in range(vuln_file_num,vuln_file_sum):
         patched_file.append(vuln_file_contents[i])
 
     start_pos, end_pos = getFuncFromSrc(patched_file, func_name)
