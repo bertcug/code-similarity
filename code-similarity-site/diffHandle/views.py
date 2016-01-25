@@ -318,11 +318,11 @@ def modify_diff(request, info_id):
             cve_info.diff_file = diff_file
             cve_info.save()
             
-            return render_to_response("modify_diff.html", 
-                        RequestContext(request,{'cve_info':cve_info, 'form':form, 'upload_ok':True}))
+            return HttpResponse(u"修改成功")
         else:
+            f = upload_diff_form()
             return render_to_response("modify_diff.html", 
-                                  RequestContext(request, {'cve_info':cve_info, 'form':form}))
+                                  RequestContext(request, {'cve_info':cve_info, 'form':f}))
 
 def modify_vuln_info(request, vuln_id):
     vuln_info = vulnerability_info.objects.get(vuln_id=vuln_id)
