@@ -1,7 +1,6 @@
 # coding=utf-8
 import os
 import re
-from _cffi_backend import typeof
 
 
 # 生成漏洞函数文件    
