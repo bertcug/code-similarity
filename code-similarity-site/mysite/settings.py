@@ -95,10 +95,10 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'code_similarity',
-        'HOST': '211.69.198.89',
+        'HOST': '127.0.0.1',
         'PORT': '3306',
-        'USER': "code_similarity",
-        'PASSWORD': "{code}:similarity",
+        'USER': "root",
+        'PASSWORD': "8089630",
     }
 }
 

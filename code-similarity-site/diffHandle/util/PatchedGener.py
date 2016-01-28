@@ -5,7 +5,6 @@ import string
 
 from VunlsGener import getFuncFromSrc
 from VunlsGener import replace_funcName
-from _mysql import NULL
 
 
 def patchedGener(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir):
@@ -156,9 +155,10 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file_dir, diff_content
     file = open(patched_file_dir, 'w')
     old = func_name
     new = cveid.replace("-", "_").upper() + "_PATCHED_" + func_name
-    replace_funcName(old, new, patched_file_dir)
+    replace_funcName(old, new, patched_func)
     
     file.writelines(patched_func)
+    file.flush()
     file.close()
     return 0
     
