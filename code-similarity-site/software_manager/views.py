@@ -136,9 +136,13 @@ def graph_manager(request):
             soft_id = int(request.POST['start'])
             #th = Thread(target=start_neo4j_db, args=(soft_id, 7474+soft_id))
             #th.start()
-            port = soft_id + 7474
-            #为杨巨留的后门
             
+            #端口号为7475-7485
+            ports = range(7475,7485)
+            inuse_ports = graph_dbs.objects.values("port")
+            port = filter(lambda x: not(x in inuse_ports), ports)[0]
+           
+            #为杨巨留的后门
             if request.user.username == "yj":
                 if is_db_on(7474):
                     return HttpResponse("端口被占用，帮不了你啊！")
