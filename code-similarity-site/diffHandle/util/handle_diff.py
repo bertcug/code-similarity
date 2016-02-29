@@ -15,7 +15,7 @@ def handle_diff_file(vuln):
         vuln.save()
         return 
     
-    soft_name = vuln.cve_info.software_name
+    soft_name = vuln.cve_info.software.software_name
     vuln_dir = os.path.join(settings.VULN_FUNC_PATH, soft_name, vuln.cve_info.cveid)
     patch_dir = os.path.join(settings.PATCHED_FUNC_PATH, soft_name, vuln.cve_info.cveid)
     if not os.path.isdir(vuln_dir):
