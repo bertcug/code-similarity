@@ -8,21 +8,15 @@ from VunlsGener import replace_funcName
 
 
 def patchedGener(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir):
-    
-    #if isNormalCondition(diff_file, soft_folder, vunl_file):
-        #return parseNormalCondition(cve_id, soft_folder, diff_file, vunl_file, vunl_func, outdir)
-    #else:
-        #diff_contents = getDiffContents(diff_file, vunl_file)
-        #diff_contents = open(diff_file, "r").readlines()
-        real_diff_contents = getRealDiffContents(diff_file, vunl_file)
-        patched_file_dir = patchedFileBuild(cve_id, vunl_func, outdir)
-        ret = writePatchedFile(cve_id, vunl_func, vunl_file, patched_file_dir, real_diff_contents)
-        if ret == -1:
-            return "NO_MODIFICATION"
-        elif ret == -2:
-            return "NO_MATCH"
-        else:
-            return patched_file_dir
+    real_diff_contents = getRealDiffContents(diff_file, vunl_file)
+    patched_file_dir = patchedFileBuild(cve_id, vunl_func, outdir)
+    ret = writePatchedFile(cve_id, vunl_func, vunl_file, patched_file_dir, real_diff_contents)
+    if ret == -1:
+        return "NO_MODIFICATION"
+    elif ret == -2:
+        return "NO_MATCH"
+    else:
+        return patched_file_dir
         
         
 # 获得real补丁内容
@@ -41,27 +35,14 @@ def getRealDiffContents(diff_file, vunl_file):
         if diff_contents[line_num].strip()[0:2] == '@@':
             start_pos = line_num
             break
-    '''   
-    for line_num in range(start_pos, line_sum):
-        if file_contents[line_num][0:2] == '- ' or file_contents[line_num][0:2] == '+ ':
-            start_pos = line_num
-            break   
-    '''
+
     for line_num in range(start_pos,line_sum):
         if diff_contents[line_num].startswith(('diff','index','---')):
             end_pos = line_num
             break
         else:
             end_pos = line_sum
-    '''
-    for line_num in range(start_pos, line_sum):
-        if diff_contents[line_num][0:3] == '---' or diff_contents[line_num][0:3] == '+++':
-            end_pos = line_num - 1
-            break
-    for line_num in range(start_pos, end_pos):
-        if diff_contents[line_num][0:2] == '- ' or diff_contents[line_num][0:2] == '+ ':
-            end_pos = line_num + 1
-    '''        
+       
     real_diff_contents = diff_contents[start_pos:end_pos]
     return real_diff_contents
 
@@ -104,7 +85,7 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file_dir, diff_content
                 continue
             else:
                 part_source.append(line)
-        for i in range(vuln_file_num,vuln_file_sum-len(part_source)):
+        for i in range(vuln_file_num,vuln_file_sum-len(part_source)+1):
             if part_source[0].strip() in vuln_file_contents[i]:
                 sig = 1
                 for p in range(len(part_source)):
@@ -166,24 +147,14 @@ def getDiffContentStart(diff_contents, vunl_file):
     # return @@ segment start number
     startlines = []
     line_sum = len(diff_contents)
-    reg = r"\+{3}(.*)%s" % os.path.basename(vunl_file)
-    
     start = 0
-    for line_num in range(line_sum):
-        if re.match(reg, diff_contents[line_num]):
-            start = line_num
-            break
-        
+
     for i in range(start, line_sum):
         if diff_contents[i].strip()[0:2] == '@@':
             startlines.append(i)
-        elif re.match(r"^(\+|\-)", diff_contents[i]):
-            continue
-        elif re.match(r"^\s+", diff_contents[i][0:2]):
-            continue
         else:
-            break
-    
+            continue
+
     return startlines
                     
 def isNormalCondition(diff_file, source_folder, vuln_file):

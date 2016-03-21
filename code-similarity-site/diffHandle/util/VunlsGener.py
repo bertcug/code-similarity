@@ -64,9 +64,9 @@ def getFuncFromSrc(line_contents, func_name):
         brackets = 0
         for i in range(start, len(line_contents)):
             if "{" in line_contents[i]:
-                brackets += 1
+                brackets += line_contents[i].count('{')
             if "}" in line_contents[i]:
-                brackets -= 1
+                brackets -= line_contents[i].count('}')
                 if brackets == 0:
                     end = i
                     break
