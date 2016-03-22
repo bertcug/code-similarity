@@ -7,13 +7,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('diffHandle', '0006_auto_20151207_1808'),
+        ('diffHandle', '0007_cve_infos_cweid'),
     ]
 
     operations = [
-        migrations.AddField(
+        migrations.AlterField(
             model_name='cve_infos',
             name='cweid',
-            field=models.CharField(default=b'unknown', max_length=10),
+            field=models.CharField(default=b'unknown', max_length=20),
         ),
     ]

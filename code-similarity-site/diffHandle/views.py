@@ -22,7 +22,7 @@ from django.forms.models import ModelChoiceField
 # Create your views here.
 class diff_import(forms.Form):
     cveid = forms.CharField(max_length = 20, label = "CVE编号")
-    cweid = forms.CharField(max_length = 10, label="CWE编号")
+    cweid = forms.CharField(max_length = 20, label="CWE编号")
     vuln_soft = forms.ModelChoiceField(queryset=softwares.objects.all(), empty_label=None, label="漏洞软件")
     diff_file = forms.FileField(label="补丁文件")
     
