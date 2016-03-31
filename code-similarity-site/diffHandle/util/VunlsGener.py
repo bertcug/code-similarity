@@ -40,7 +40,11 @@ def getFuncFromSrc(line_contents, func_name):
     #在整个文件中正则搜索函数体位置,可以绕过函数的声明
     #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]&]*\)\s*\{' % func_name
     #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\s\S]*?\)\s*\{' % func_name
-    pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]\/&\(\)]*\)\s*\{' % func_name
+    #pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]\/&\(\)]*\)\s*\{' % func_name
+    #if func_name.startswith('SYSCALL_DEFINE'):
+    #   pattern = r'^%s\[\w\s\*\,\[\]\/&\(\)\.{3}]*\)\s*\{' % func_name
+    #else:
+    pattern = r'^[\w\s]+[\s\*]+%s\s*\([\w\s\*\,\[\]\/&\(\)\.{3}]*\)\s*\{' % func_name
     r_pattern = re.compile(pattern, re.MULTILINE)
     ret = r_pattern.search(contents)
     

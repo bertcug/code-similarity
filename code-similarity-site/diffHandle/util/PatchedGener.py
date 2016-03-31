@@ -25,11 +25,18 @@ def getRealDiffContents(diff_file, vunl_file):
     line_sum = len(diff_contents)
     start_pos = end_pos = 0
     
-    reg = r"\+{3}(.*)%s" % os.path.basename(vunl_file)
+    file_name = vunl_file[41:].split('/')
+    reg = r"\+{3}(.*)%s" % '/'.join(file_name[2:]).replace('.', '\.')
     for line_num in range(line_sum):
         if re.match(reg, diff_contents[line_num]):
             start_pos = line_num
             break
+    if start_pos == 0:
+        reg = r"\+{3}(.*)%s" % os.path.basename(vunl_file)
+        for line_num in range(line_sum):
+            if re.match(reg, diff_contents[line_num]):
+                start_pos = line_num
+                break
                
     for line_num in range(start_pos, line_sum):
         if diff_contents[line_num].strip()[0:2] == '@@':
@@ -79,9 +86,9 @@ def writePatchedFile(cveid, func_name, vuln_file, patched_file_dir, diff_content
         part_source = []
         diff_line_num = 1
         for line in diff_contents[diff_starts[index]+1:diff_ends[index]+1]:
-            if line.strip().startswith('-'):
+            if line.startswith('-'):
                 part_source.append(line)
-            elif line.strip().startswith('+'):
+            elif line.startswith('+'):
                 continue
             else:
                 part_source.append(line)
