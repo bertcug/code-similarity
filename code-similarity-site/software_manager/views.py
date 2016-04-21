@@ -142,19 +142,11 @@ def graph_manager(request):
             inuse_ports = set()
             for port in graph_dbs.objects.values("port"):
                 inuse_ports.add(port['port'])
-            port = filter(lambda x: not(x in inuse_ports), ports)[0]
-            print "get ports:", port
+            port = filter(lambda x: not(x in inuse_ports), ports)
+            if port is None:
+                return HttpResponse(u"端口已全部被占用！")
            
-            #为杨巨留的后门
-            if request.user.username == "yj":
-                if is_db_on(7474):
-                    return HttpResponse("端口被占用，帮不了你啊！")
-                else:
-                    port = 7474
-            
-            
-            start_neo4j_db(soft_id, port)
-            
+            start_neo4j_db(soft_id, port[0])
             
             infos = graph_dbs.objects.all()
             
