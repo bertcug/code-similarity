@@ -139,8 +139,9 @@ def graph_manager(request):
             
             #端口号为7475-7485
             ports = range(7475,7485)
-            inuse_ports = graph_dbs.objects.values("port")
-            print "inuse_ports:", inuse_ports
+            inuse_ports = set()
+            for port in graph_dbs.objects.values("port"):
+                inuse_ports.add(port['port'])
             port = filter(lambda x: not(x in inuse_ports), ports)[0]
             print "get ports:", port
            
