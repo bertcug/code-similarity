@@ -140,7 +140,9 @@ def graph_manager(request):
             #端口号为7475-7485
             ports = range(7475,7485)
             inuse_ports = graph_dbs.objects.values("port")
+            print "inuse_ports:", inuse_ports
             port = filter(lambda x: not(x in inuse_ports), ports)[0]
+            print "get ports:", port
            
             #为杨巨留的后门
             if request.user.username == "yj":
